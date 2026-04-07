@@ -1,0 +1,121 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import { getCollection } from 'astro:content';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout>
+  <div class="home" id="home">
+    <!-- Header -->
+    <Header currentPage="work" variant="home" />
+
+    <!-- Navigation -->
+    <nav class="home__nav" id="main-nav">
+      <a href="/" class="btn-light is-active">Work</a>
+      <a href="/about" class="btn-light">About</a>
+    </nav>
+
+    <!-- Bio text -->
+    <div class="home__bio" id="home-bio">
+      <p class="home__bio-text">
+        Hi, I'm <span class="type-pixel">joy</span>, an Oslo-based product designer with a
+        passion on building AI native products that feel
+        intuitive, playful and genuinely useful. Previously
+        at Kahoot!
+      </p>
+      <div class="home__cta">
+        <a href="mailto:joyleelawat@gmail.com" class="btn-dark" id="btn-say-hi">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="white" stroke-width="1.5"/>
+          </svg>
+          say hi
+        </a>
+      </div>
+    </div>
+
+    <!-- Cloud View -->
+    <div class="cloud" id="cloud-view">
+      <div class="cloud__canvas" id="cloud-canvas">
+        <!-- Tagline -->
+        <div class="cloud__tagline type-h3" id="cloud-tagline">
+          DESIGNING WITH CODE, BUILDING WITH PURPOSE.
+        </div>
+
+        <!-- Project images rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Timeline View -->
+    <div class="timeline" id="timeline-view">
+      <div class="timeline__track" id="timeline-track">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Project Overlay (shared between views) -->
+    <div class="project-overlay" id="project-overlay">
+      <div class="project-overlay__title" id="overlay-title"></div>
+      <div class="project-overlay__body">
+        <div class="project-overlay__meta">
+          <span class="project-overlay__url" id="overlay-url"></span>
+          <span class="project-overlay__category" id="overlay-category"></span>
+        </div>
+        <a class="project-overlay__link" id="overlay-link" href="#">
+          <span class="project-overlay__link-text">View project</span>
+          <svg class="project-overlay__link-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="#1c1c1c" stroke-width="1.5"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Switch -->
+    <div class="home__switch">
+      <div class="switch" id="view-switch">
+        <span class="switch__label" data-view="cloud">Cloud</span>
+        <div class="switch__track" id="switch-track" data-active="cloud">
+          <div class="switch__thumb"></div>
+        </div>
+        <span class="switch__label" data-view="timeline">Timeline</span>
+      </div>
+    </div>
+
+    <!-- Get in touch -->
+    <div class="home__contact">
+      <button class="btn-light" id="btn-contact">Get in touch</button>
+    </div>
+  </div>
+
+  <!-- Project data for JS -->
+  <script define:vars={{ projectsData: projects.map(p => ({
+    slug: p.id,
+    title: p.data.title,
+    headline: p.data.headline,
+    subtitle: p.data.subtitle,
+    year: p.data.year,
+    url: p.data.url || '',
+    category: p.data.category,
+    order: p.data.order,
+    thumbnail: p.data.thumbnail,
+    heroImages: p.data.heroImages,
+  })) }}>
+    window.__PROJECTS__ = projectsData;
+  </script>
+  <script src="../scripts/cloud.js"></script>
+  <script src="../scripts/contact.js"></script>
+</BaseLayout>
+
+<style>
+  /* Home-specific overrides */
+  .home__nav {
+    position: absolute;
+    top: 80px;
+    left: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+  }
+</style>

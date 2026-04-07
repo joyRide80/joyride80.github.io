@@ -1,0 +1,52 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { 
+  title = "joy·object — Product Designer & Creative Technologist",
+  description = "Joy is an Oslo-based product designer and creative technologist with 17+ years of experience building AI-native products that feel intuitive, playful, and genuinely useful."
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="/fonts/Pantasia-Regular.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Hedvig+Letters+Serif:opsz@12..24&family=Instrument+Serif&family=Tiny5&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <slot />
+
+    <!-- Contact Drawer -->
+    <div class="contact-drawer" id="contact-drawer">
+      <div class="contact-drawer__label">Resources</div>
+      <div class="contact-drawer__links">
+        <a href="https://x.com/joyobject" target="_blank" rel="noopener" class="contact-drawer__link">Twitter / X</a>
+        <a href="https://linkedin.com/in/joyobject" target="_blank" rel="noopener" class="contact-drawer__link">LinkedIn</a>
+        <a href="mailto:joyleelawat@gmail.com" class="contact-drawer__link">Email</a>
+      </div>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>
