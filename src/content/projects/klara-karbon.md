@@ -16,15 +16,15 @@ tags:
 category: "Climatetech, AI"
 introduction: "Klara is a carbon accounting platform designed for small businesses in Norway. Our clients wanted to create a more affordable solution, as existing options were too expensive for their target market. With the help of AI, we were able to build a more cost-effective solution."
 order: 1
-thumbnail: "/images/projects/klara/thumbnail.png"
+thumbnail: "/joyObjectSite/images/projects/klara/thumbnail.png"
 heroImages:
-  - src: "/images/projects/klara/transaction-page.png"
+  - src: "/joyObjectSite/images/projects/klara/transaction-page.png"
     caption: "Transaction page"
     size: "large"
-  - src: "/images/projects/klara/emission-page.png"
+  - src: "/joyObjectSite/images/projects/klara/emission-page.png"
     caption: "Emission page"
     size: "large"
-  - src: "/images/projects/klara/thumbnail.png"
+  - src: "/joyObjectSite/images/projects/klara/thumbnail.png"
     caption: "Klara brand"
     size: "small"
 timelineImage: 2 
@@ -50,11 +50,11 @@ Simplifying the Workflow The application's workflow is straightforward: users im
 - Emission Page: This page displays emission values by category, providing users with data to inform their decisions on reducing emissions.
 - Overview: A dashboard-style page showing the grand total emissions for all categories.
 
-![Transaction page](/images/projects/klara/transaction-page.png)
+![Transaction page](/joyObjectSite/images/projects/klara/transaction-page.png)
 
-![Emission page](/images/projects/klara/emission-page.png)
+![Emission page](/joyObjectSite/images/projects/klara/emission-page.png)
 
-![Overview page](/images/projects/klara/overview-page.png)
+![Overview page](/joyObjectSite/images/projects/klara/overview-page.png)
 
 User Testing and Iteration We conducted user testing with a hi-fidelity prototype to ensure users understood the workflow without needing a tutorial. The results showed that we needed to add guidance for first-time users, which we incorporated into the design.
 
@@ -66,13 +66,13 @@ Here are two screen images showing the evolution of the Transaction Detail page:
 
 Our initial design assumed expert users who would understand the calculation and emission factors. The interface focused on displaying results and emission factors from trusted sources.
 
-![Before MVP](/images/projects/klara/before-mvp.png)
+![Before MVP](/joyObjectSite/images/projects/klara/before-mvp.png)
 
 ### After MVP
 
 We redesigned the UI for regular users with limited knowledge of carbon emissions. The new design helps users understand the calculation process and is less focused on the source of emission factors.
 
-![After MVP](/images/projects/klara/after-mvp.png)
+![After MVP](/joyObjectSite/images/projects/klara/after-mvp.png)
 
 ## Launch and outcome
 

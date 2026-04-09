@@ -81,25 +81,30 @@ const projects = (await getCollection('projects')).sort(compareProjectCollection
 
   </div>
 
-  <!-- Project data for JS -->
-  <script define:vars={{ projectsData: projects.map(p => ({
-    slug: p.id,
-    title: p.data.title,
-    headline: p.data.headline,
-    subtitle: p.data.subtitle,
-    year: p.data.year,
-    url: p.data.url || '',
-    category: p.data.category,
-    order: p.data.order,
-    thumbnail: p.data.thumbnail,
-    timelineImage: p.data.timelineImage,
-    timelineAspect: p.data.timelineAspect,
-    timelineCycle: p.data.timelineCycle,
-    timelineVideoEmbed: p.data.timelineVideoEmbed,
-    timelineVideoPoster: p.data.timelineVideoPoster,
-    heroImages: p.data.heroImages,
-  })) }}>
+  <script define:vars={{ 
+    projectsData: projects.map(p => ({
+      slug: p.id,
+      title: p.data.title,
+      headline: p.data.headline,
+      subtitle: p.data.subtitle,
+      year: p.data.year,
+      url: p.data.url || '',
+      category: p.data.category,
+      order: p.data.order,
+      thumbnail: p.data.thumbnail ? (p.data.thumbnail.startsWith('/') ? import.meta.env.BASE_URL.replace(/\/$/, '') + p.data.thumbnail : p.data.thumbnail) : '',
+      timelineImage: p.data.timelineImage,
+      timelineAspect: p.data.timelineAspect,
+      timelineCycle: p.data.timelineCycle,
+      timelineVideoEmbed: p.data.timelineVideoEmbed,
+      timelineVideoPoster: p.data.timelineVideoPoster ? (p.data.timelineVideoPoster.startsWith('/') ? import.meta.env.BASE_URL.replace(/\/$/, '') + p.data.timelineVideoPoster : p.data.timelineVideoPoster) : '',
+      heroImages: p.data.heroImages?.map(img => ({
+        ...img,
+        src: img.src.startsWith('/') ? import.meta.env.BASE_URL.replace(/\/$/, '') + img.src : img.src
+      })) || [],
+    })) 
+  }}>
     window.__PROJECTS__ = projectsData;
+    window.__BASE_URL__ = import.meta.env.BASE_URL;
   </script>
   <script src="../scripts/cloud.js"></script>
 </BaseLayout>

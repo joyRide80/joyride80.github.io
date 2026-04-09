@@ -13,23 +13,23 @@ tags:
 category: "Productivity, SaaS"
 introduction: 'As a project management tool, Podio empowers users to tailor their workflow to their specific needs. However, this flexibility also introduces complexity, making it challenging for some users to navigate the system. Our user base is diverse, with different industries utilizing Podio in unique ways. For instance, advertising agencies rely heavily on the activity stream, while recruiting companies focus on tasks. To unlock Podio''s full potential, users must understand and adapt to its underlying structure, which consists of Items, Apps, Workspaces, and Organizations. In Podio, an "Item" is a versatile term that represents any type of user-generated content, such as meetings, contacts, projects, or sales leads. Users have the freedom to customize their Item names, but despite this flexibility, we noticed a concerning trend: new users were creating fewer and fewer Items within the platform.'
 order: 5
-thumbnail: "/images/projects/podio/thumbnail.png"
+thumbnail: "/joyObjectSite/images/projects/podio/thumbnail.png"
 
 heroImages:
-  - src: "/images/projects/podio/old-vs-new.png"
+  - src: "/joyObjectSite/images/projects/podio/old-vs-new.png"
     caption: "Old vs new item page"
     size: "large"
-  - src: "/images/projects/podio/paper-metaphor.png"
+  - src: "/joyObjectSite/images/projects/podio/paper-metaphor.png"
     caption: "Podio item as a piece of paper"
     size: "large"
-  - src: "/images/projects/podio/relationship-diagram.png"
+  - src: "/joyObjectSite/images/projects/podio/relationship-diagram.png"
     caption: "Item relationship diagram"
     size: "small"
 timelineImage: -1
 timelineAspect: 1.6
 ---
 
-![Podio structure](/images/projects/podio/structure.png)
+![Podio structure](/joyObjectSite/images/projects/podio/structure.png)
 
 So how could we make people understand Podio core values and create more items?
 
@@ -40,7 +40,7 @@ Why users didn't create enough items?
 - 40% of the item page is dedicated to navigation. The content did not stand out, and it was hard for users to focus on the content.
 - Podio core value — Structure and workflow are abstract that it's not apparent to see on the interface compared with task management or calendar tool.
 
-<img src="/images/projects/podio/old-vs-new.png" alt="Old vs new item page — the blue area indicates navigation" data-cycle="/images/projects/podio/old-vs-new.png,/images/projects/podio/structure.png,/images/projects/podio/thumbnail.png" />
+<img src="/joyObjectSite/images/projects/podio/old-vs-new.png" alt="Old vs new item page — the blue area indicates navigation" data-cycle="/joyObjectSite/images/projects/podio/old-vs-new.png,/joyObjectSite/images/projects/podio/structure.png,/joyObjectSite/images/projects/podio/thumbnail.png" />
 
 ## The process
 
@@ -50,7 +50,7 @@ We started briefly by researching 2 main concepts of how people use Podio: Overv
 
 In the old solution, we heavily focused on the flow between the App layout and the item page by implementing the interaction feature called Slidy Panel. When users are in the App layout, they can click on the item list, and the item details will Slide in from the right of the screen. By doing this, users can see more information without leaving the page, so the experience of moving between overview and detail is not interrupted by page loading time. However, we realized that this solution solved one thing but added another complexity.
 
-![Slidy Panel interaction](/images/projects/podio/slidy-panel.png)
+![Slidy Panel interaction](/joyObjectSite/images/projects/podio/slidy-panel.png)
 
 - First, the pattern appears only on the App Layout and not anywhere else.
 - Users can only read that extra information. They cannot edit or comment on the content since they must submit it.
@@ -66,7 +66,7 @@ Each item is represented as a piece of paper.
 
 The concept of paper helps us to explain how information is structured in Podio since it's tangible. It also reflects in visual representation - an item is a white piece area on top of subtle grey. The comment is an additional element attached to the right of it.
 
-![Podio item as a piece of paper](/images/projects/podio/paper-metaphor.png)
+![Podio item as a piece of paper](/joyObjectSite/images/projects/podio/paper-metaphor.png)
 
 ### Good Old Breadcrumb
 
@@ -80,8 +80,8 @@ Animation is crucial to explain items and their relationship
 
 We have learned that the transition between overview and content needs to be seamless. We again used the concept of paper popping up on top of any overview pages — App Layout, Activity stream, or Inbox. We presented the idea to the developers to convince them that loading content on top of existing one must be very fast, and it shouldn't make people feel that they have left the page. They should still feel that they are reading something on the overview page. The animation below shows how to create an item on top of an App Layout page.
 
-![Item creation animation](/images/projects/podio/item-animation.gif)
+![Item creation animation](/joyObjectSite/images/projects/podio/item-animation.gif)
 
 Using paper metaphors also helps us visualize the relationship between items. I have developed a lot of diagrams by studying the arrangement of stacked paper as the reference point. Referencing an item to another item is one of the most advanced and complicated features in Podio.
 
-![Diagram showing how to use 3 dimensions space to explain the relationship among items](/images/projects/podio/relationship-diagram.png)
+![Diagram showing how to use 3 dimensions space to explain the relationship among items](/joyObjectSite/images/projects/podio/relationship-diagram.png)

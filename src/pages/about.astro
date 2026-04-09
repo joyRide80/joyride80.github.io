@@ -12,7 +12,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <div class="about__left-col">
       <header>
         <a
-          href="/"
+          href={import.meta.env.BASE_URL}
           class="type-logo home__logo"
           style="text-decoration:none;color:var(--gray-900);"
         >
@@ -21,8 +21,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </header>
 
       <nav class="about__nav">
-        <a href="/" class="btn-light">Work</a>
-        <a href="/about" class="btn-light is-active">
+        <a href={import.meta.env.BASE_URL} class="btn-light">Work</a>
+        <a href={`${import.meta.env.BASE_URL}about/`} class="btn-light is-active">
           About
           <span
             style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;"
@@ -40,7 +40,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <!-- Left: Portrait -->
       <div class="about__portrait-wrap">
         <img
-          src="/images/about/joy-portrait.jpg"
+          src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/images/about/joy-portrait.jpg`}
           alt="Joy working at desk"
           class="about__portrait"
           width="400"

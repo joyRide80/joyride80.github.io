@@ -9,7 +9,7 @@ const { currentPage, showNav = true, variant = 'home' } = Astro.props;
 ---
 
 <header class={`header header--${variant}`}>
-  <a href="/" class="home__logo type-logo" id="site-logo">
+  <a href={import.meta.env.BASE_URL} class="home__logo type-logo" id="site-logo">
     joy<span class="home__logo-dot"></span>object
   </a>
   
@@ -20,11 +20,11 @@ const { currentPage, showNav = true, variant = 'home' } = Astro.props;
 
 {showNav && variant !== 'project' && (
   <nav class="home__nav" id="main-nav">
-    <a href="/" class={`btn-light ${currentPage === 'work' ? 'is-active' : ''}`}>
+    <a href={import.meta.env.BASE_URL} class={`btn-light ${currentPage === 'work' ? 'is-active' : ''}`}>
       Work
       {currentPage === 'work' && <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;"><span style="width:4px;height:4px;background:var(--gray-900);border-radius:50%;display:block;"></span></span>}
     </a>
-    <a href="/about" class={`btn-light ${currentPage === 'about' ? 'is-active' : ''}`}>
+    <a href={`${import.meta.env.BASE_URL}about/`} class={`btn-light ${currentPage === 'about' ? 'is-active' : ''}`}>
       About
       {currentPage === 'about' && <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;"><span style="width:4px;height:4px;background:var(--gray-900);border-radius:50%;display:block;"></span></span>}
     </a>

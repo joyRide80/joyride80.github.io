@@ -205,7 +205,8 @@ document.addEventListener("DOMContentLoaded", () => {
       el.addEventListener("mouseleave", handleItemLeave);
       el.addEventListener("click", () => {
         if (!isDragging) {
-          window.location.href = `/projects/${item.slug}`;
+          const baseUrl = window.__BASE_URL__ || "/";
+          window.location.href = `${baseUrl.replace(/\/$/, "")}/projects/${item.slug}`;
         }
       });
 
@@ -282,7 +283,8 @@ document.addEventListener("DOMContentLoaded", () => {
       el.addEventListener("mouseenter", () => handleTimelineHover(project, el));
       el.addEventListener("mouseleave", handleTimelineLeave);
       el.addEventListener("click", () => {
-        window.location.href = `/projects/${project.slug}`;
+        const baseUrl = window.__BASE_URL__ || "/";
+        window.location.href = `${baseUrl.replace(/\/$/, "")}/projects/${project.slug}`;
       });
 
       timelineTrack.appendChild(el);
@@ -420,7 +422,8 @@ document.addEventListener("DOMContentLoaded", () => {
     overlayTitle.textContent = project.title;
     overlayUrl.textContent = project.url || "";
     overlayCategory.textContent = project.category;
-    overlayLink.href = `/projects/${project.slug}`;
+    const baseUrl = window.__BASE_URL__ || "/";
+    overlayLink.href = `${baseUrl.replace(/\/$/, "")}/projects/${project.slug}`;
 
     // Position near hovered element
     const rect = nearEl.getBoundingClientRect();
