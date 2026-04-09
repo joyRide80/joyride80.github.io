@@ -4,7 +4,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const drawer = document.getElementById("contact-drawer");
-  const buttons = document.querySelectorAll("#btn-contact");
+  const triggers = document.querySelectorAll("[data-open-contact-drawer]");
 
   if (!drawer) return;
 
@@ -20,11 +20,19 @@ document.addEventListener("DOMContentLoaded", () => {
     drawer.classList.remove("is-open");
   }
 
-  buttons.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
+  triggers.forEach((el) => {
+    el.addEventListener("click", (e) => {
       e.preventDefault();
       toggleDrawer();
     });
+    if (el.getAttribute("role") === "button") {
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleDrawer();
+        }
+      });
+    }
   });
 
   // Close on click outside
@@ -32,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (
       isOpen &&
       !drawer.contains(e.target) &&
-      !e.target.closest("#btn-contact")
+      !e.target.closest("[data-open-contact-drawer]")
     ) {
       closeDrawer();
     }

@@ -11,14 +11,21 @@ const projectsCollection = defineCollection({
     url: z.string().optional(),
     tags: z.array(z.string()),
     category: z.string(),
+    introduction: z.string().optional(),
     order: z.number(),
     thumbnail: z.string(),
+    timelineImage: z.number().optional().default(0),
+    timelineAspect: z.number().optional(),
+    timelineCycle: z.boolean().optional().default(false),
+    timelineVideoEmbed: z.string().optional(),
+    timelineVideoPoster: z.string().optional(),
     heroImages: z
       .array(
         z.object({
           src: z.string(),
           caption: z.string().optional(),
           size: z.enum(["small", "medium", "large"]),
+          cycleImages: z.array(z.string()).optional(),
         }),
       )
       .optional()

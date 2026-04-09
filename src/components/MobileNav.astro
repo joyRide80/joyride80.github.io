@@ -1,0 +1,98 @@
+---
+interface Props {
+  active?: "work" | "about" | null;
+}
+
+const { active = null } = Astro.props;
+---
+
+<div class="mobile-nav" data-mobile-nav>
+  <button
+    type="button"
+    class="mobile-nav__toggle"
+    id="mobile-nav-toggle"
+    aria-expanded="false"
+    aria-controls="mobile-nav-panel"
+  >
+    <span class="visually-hidden">Menu</span>
+    <span class="mobile-nav__bars" aria-hidden="true">
+      <span class="mobile-nav__bar"></span>
+      <span class="mobile-nav__bar"></span>
+      <span class="mobile-nav__bar"></span>
+    </span>
+  </button>
+
+  <div class="mobile-nav__backdrop" id="mobile-nav-backdrop"></div>
+
+  <div
+    id="mobile-nav-panel"
+    class="mobile-nav__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="mobile-nav-heading"
+    aria-hidden="true"
+  >
+    <p id="mobile-nav-heading" class="visually-hidden">Site navigation</p>
+    <nav class="mobile-nav__inner" aria-label="Primary">
+      <ul class="mobile-nav__list">
+        <li>
+          <a
+            href="/"
+            class:list={["btn-light mobile-nav__link", { "is-active": active === "work" }]}
+          >
+            Work
+            {
+              active === "work" && (
+                <span class="mobile-nav__active-dot-wrap">
+                  <span class="mobile-nav__active-dot"></span>
+                </span>
+              )
+            }
+          </a>
+        </li>
+        <li>
+          <a
+            href="/about"
+            class:list={["btn-light mobile-nav__link", { "is-active": active === "about" }]}
+          >
+            About
+            {
+              active === "about" && (
+                <span class="mobile-nav__active-dot-wrap">
+                  <span class="mobile-nav__active-dot"></span>
+                </span>
+              )
+            }
+          </a>
+        </li>
+        <li>
+          <button
+            type="button"
+            class="btn-dark mobile-nav__contact"
+            data-open-contact-drawer
+          >
+            Get in touch
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<style>
+  .mobile-nav__active-dot-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+  }
+
+  .mobile-nav__active-dot {
+    width: 4px;
+    height: 4px;
+    background: var(--gray-900);
+    border-radius: 50%;
+    display: block;
+  }
+</style>

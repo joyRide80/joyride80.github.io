@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, render } from 'astro:content';
+import { compareProjectCollectionEntries } from '../../lib/projectYear';
+import { isVideoAssetPath } from '../../lib/media';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
@@ -12,12 +14,12 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
-const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const projects = (await getCollection('projects')).sort(compareProjectCollectionEntries);
 
 const currentIndex = projects.findIndex(p => p.id === project.id);
 const prevProject = currentIndex > 0 ? projects[currentIndex - 1] : projects[projects.length - 1];
 const nextProject = currentIndex < projects.length - 1 ? projects[currentIndex + 1] : projects[0];
-const { title, headline, subtitle, year, url, tags, category, heroImages } = project.data;
+const { title, headline, subtitle, year, url, tags, category, heroImages, introduction } = project.data;
 ---
 
 <BaseLayout title={`${headline} — joy·object`} description={subtitle}>
@@ -28,13 +30,13 @@ const { title, headline, subtitle, year, url, tags, category, heroImages } = pro
         joy<span class="home__logo-dot"></span>object
       </a>
       <nav class="nav-prevnext">
-        <a href={`/projects/${prevProject.slug}`} class="nav-prevnext__item">
+        <a href={`/projects/${prevProject.id}`} class="nav-prevnext__item">
           <svg class="nav-prevnext__arrow nav-prevnext__arrow--prev" width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="#1c1c1c" stroke-width="1.5"/>
           </svg>
           <span class="type-nav">PREV</span>
         </a>
-        <a href={`/projects/${nextProject.slug}`} class="nav-prevnext__item">
+        <a href={`/projects/${nextProject.id}`} class="nav-prevnext__item">
           <span class="type-nav">NEXT</span>
           <svg class="nav-prevnext__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="#1c1c1c" stroke-width="1.5"/>
@@ -51,10 +53,13 @@ const { title, headline, subtitle, year, url, tags, category, heroImages } = pro
 
     <!-- Intro section -->
     <div class="project__intro">
-      <div style="grid-column: 1;">
-        <div class="type-tiny project__intro-label">Introduction</div>
-      </div>
-      <div class="project__intro-meta" style="grid-column: 3;">
+      {introduction && (
+        <div class="project__intro-content">
+          <div class="type-tiny project__intro-label">Introduction</div>
+          <p class="project__intro-text">{introduction}</p>
+        </div>
+      )}
+      <div class="project__intro-meta">
         <span class="project__meta-year">{year}</span>
         {url && <span class="project__meta-url">{url}</span>}
         <span class="project__meta-tags">{tags.join(' / ')}</span>
@@ -66,7 +71,28 @@ const { title, headline, subtitle, year, url, tags, category, heroImages } = pro
       <div class="project__collage">
         {heroImages.map((img) => (
           <div class={`project__collage-item project__collage-item--${img.size}`}>
-            <img src={img.src} alt={img.caption || ''} loading="lazy" />
+            <div class="project__collage-item-media">
+              {isVideoAssetPath(img.src) ? (
+                <video
+                  src={img.src}
+                  muted
+                  loop
+                  playsinline
+                  autoplay
+                  aria-label={img.caption || headline}
+                />
+              ) : (
+                <img
+                  src={img.src}
+                  alt={img.caption ? '' : headline}
+                  loading="lazy"
+                  data-cycle={img.cycleImages?.length ? JSON.stringify(img.cycleImages) : undefined}
+                />
+              )}
+            </div>
+            {img.caption && (
+              <p class="project__image-caption">{img.caption}</p>
+            )}
           </div>
         ))}
       </div>
@@ -79,18 +105,22 @@ const { title, headline, subtitle, year, url, tags, category, heroImages } = pro
 
     <!-- Footer -->
     <div class="project__footer">
-      <div>
-        <p class="project__footer-title">All projects/Let's talk</p>
-        <button class="btn-light" id="btn-contact" style="margin-top:12px;">Get in touch</button>
+      <div class="project__footer-title">
+        <a href="/" style="text-decoration:none;">All projects</a> / <span
+          role="button"
+          tabindex="0"
+          data-open-contact-drawer
+          style="cursor:pointer;text-decoration:underline;text-decoration-thickness:0.5px;text-decoration-color:var(--gray-600);"
+          >Let's talk</span>
       </div>
       <nav class="nav-prevnext">
-        <a href={`/projects/${prevProject.slug}`} class="nav-prevnext__item">
+        <a href={`/projects/${prevProject.id}`} class="nav-prevnext__item">
           <svg class="nav-prevnext__arrow nav-prevnext__arrow--prev" width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="#1c1c1c" stroke-width="1.5"/>
           </svg>
           <span class="type-nav">PREV</span>
         </a>
-        <a href={`/projects/${nextProject.slug}`} class="nav-prevnext__item">
+        <a href={`/projects/${nextProject.id}`} class="nav-prevnext__item">
           <span class="type-nav">NEXT</span>
           <svg class="nav-prevnext__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="#1c1c1c" stroke-width="1.5"/>
@@ -99,27 +129,63 @@ const { title, headline, subtitle, year, url, tags, category, heroImages } = pro
       </nav>
     </div>
   </div>
-
-  <script src="../../scripts/contact.js"></script>
 </BaseLayout>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const CYCLE_INTERVAL = 320;
+
+    document.querySelectorAll<HTMLImageElement>("[data-cycle]").forEach((img) => {
+      const raw = img.dataset.cycle || "";
+      let pool: string[];
+      try {
+        pool = JSON.parse(raw);
+      } catch {
+        pool = raw.split(",").map((s: string) => s.trim());
+      }
+      if (!pool.length) return;
+
+      const originalSrc = img.getAttribute("src") || "";
+      if (!pool.includes(originalSrc)) pool.unshift(originalSrc);
+
+      pool.forEach((src: string) => {
+        const preload = new Image();
+        preload.src = src;
+      });
+
+      let idx = 0;
+      setInterval(() => {
+        idx = (idx + 1) % pool.length;
+        img.src = pool[idx];
+      }, CYCLE_INTERVAL);
+
+      img.closest(".project__collage-item-media, figure, p")
+        ?.classList.add("is-auto-cycling");
+    });
+  });
+</script>
 
 <style>
   .project__content {
-    max-width: 479px;
+    grid-column: 1 / span 5;
+    display: grid;
+    grid-template-columns: subgrid;
   }
 
   .project__content :global(h2) {
+    grid-column: 1 / span 2;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 400;
-    line-height: 20px;
-    letter-spacing: 0.33px;
+    line-height: 25px;
+    letter-spacing: 0.4px;
     text-transform: uppercase;
     margin-top: 48px;
     margin-bottom: 12px;
   }
 
   .project__content :global(h3) {
+    grid-column: 1 / span 2;
     font-family: var(--font-display);
     font-size: 25px;
     font-weight: 400;
@@ -129,17 +195,19 @@ const { title, headline, subtitle, year, url, tags, category, heroImages } = pro
   }
 
   .project__content :global(p) {
+    grid-column: 1 / span 2;
     font-family: var(--font-body);
-    font-size: 17px;
-    line-height: 24px;
+    font-size: 21px;
+    line-height: 32px;
     margin-bottom: 16px;
   }
 
   .project__content :global(ul),
   .project__content :global(ol) {
+    grid-column: 1 / span 2;
     font-family: var(--font-body);
-    font-size: 17px;
-    line-height: 24px;
+    font-size: 21px;
+    line-height: 32px;
     margin-bottom: 16px;
     padding-left: 20px;
     list-style: disc;
@@ -149,9 +217,89 @@ const { title, headline, subtitle, year, url, tags, category, heroImages } = pro
     margin-bottom: 8px;
   }
 
-  .project__content :global(img) {
+  .project__content :global(p > img) {
+    grid-column: 1 / span 2;
     width: 100%;
     border-radius: 4px;
     margin: 24px 0;
+  }
+
+  .project__content :global(figure) {
+    grid-column: 1 / span 2;
+    margin: 24px 0;
+  }
+
+  .project__content :global(figure img) {
+    width: 100%;
+    border-radius: 4px;
+    margin: 0;
+    display: block;
+  }
+
+  .project__content :global(figcaption) {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 25px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin-top: 8px;
+  }
+
+  .project__content :global(.project__embed) {
+    grid-column: 1 / span 2;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin: 24px 0;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--gray-900);
+  }
+
+  .project__content :global(figure .project__embed) {
+    grid-column: unset;
+    margin: 0;
+  }
+
+  .project__content :global(.project__embed--vertical) {
+    width: min(320px, 100%);
+    aspect-ratio: 9 / 16;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .project__content :global(.project__embed iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  @media (max-width: 768px) {
+    .project__content {
+      display: block;
+    }
+
+    .project__content :global(h2) {
+      margin-top: 32px;
+    }
+
+    .project__content :global(figure) {
+      margin: 16px 0;
+    }
+
+    .project__content :global(p > img) {
+      margin: 16px 0;
+    }
+
+    .project__content :global(.project__embed) {
+      margin: 16px 0;
+    }
+
+    .project__content :global(.project__embed--vertical) {
+      width: 100%;
+    }
   }
 </style>

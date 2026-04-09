@@ -10,10 +10,11 @@ tags:
   - "User interview"
   - "UI design"
 category: "Edtech"
+introduction: "Being played by 1 billion people annually, Kahoot! is known for multiple choice or close-ended questions. Players can only pick pre-defined answers from their smartphones when playing these games. It's that simple, quick, fun, and engaging. The challenge came when our primary target users, the teachers, requested a new game type, Open-ended question. This question type allows them to test deeper knowledge of a topic and see how well their students recall content without any cues."
 order: 2
 thumbnail: "/images/projects/kahoot/thumbnail.png"
 heroImages:
-  - src: "/images/projects/kahoot/controller-comparison.png"
+  - src: "/images/projects/kahoot/kahootLogo.png"
     caption: "Mobile controller comparison"
     size: "large"
   - src: "/images/projects/kahoot/host-screen-1.png"
@@ -22,11 +23,8 @@ heroImages:
   - src: "/images/projects/kahoot/host-screen-2.png"
     caption: "Host screen — player answers"
     size: "small"
+timelineImage: 0
 ---
-
-## Background
-
-Being played by 1 billion people annually, Kahoot! is known for multiple choice or close-ended questions. Players can only pick pre-defined answers from their smartphones when playing these games. It's that simple, quick, fun, and engaging. The challenge came when our primary target users, the teachers, requested a new game type, Open-ended question. This question type allows them to test deeper knowledge of a topic and see how well their students recall content without any cues.
 
 ![Kahoot! open-ended question overview](/images/projects/kahoot/thumbnail.png)
 
@@ -50,8 +48,6 @@ After players submitted their answers, they all stared at the white screen, wait
 
 I made many animation prototypes using Adobe After Effects and shared them with designers and developers. I collected a lot of feedback and fine-tuned the animation several times. We finally came up with this Cliffhanger moment. After players submit their answers, all answers appear on the screen simultaneously and start shaking. Some wrong answers are falling out of the screens; only the top 3 answers are still on the screen. Those top 3 answers grow big, and they are against each other. However, in the end, all answers but the right one fall from the screen. We not only use is Cliffhanger effect on this question type. We also continue to use it again in the latest question types called Slider.
 
-![Host screen version 1 — demographics focus](/images/projects/kahoot/host-screen-1.png)
-
-![Host screen version 2 — player answers focus](/images/projects/kahoot/host-screen-2.png)
+<img src="/images/projects/kahoot/host-screen-1.png" alt="Host screen cycling between demographics and player answers" data-cycle="/images/projects/kahoot/host-screen-1.png,/images/projects/kahoot/host-screen-2.png" />
 
 ![Slider question type](/images/projects/kahoot/slider.png)

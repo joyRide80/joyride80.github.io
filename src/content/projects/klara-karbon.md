@@ -14,6 +14,7 @@ tags:
   - "Design system"
   - "Branding"
 category: "Climatetech, AI"
+introduction: "Klara is a carbon accounting platform designed for small businesses in Norway. Our clients wanted to create a more affordable solution, as existing options were too expensive for their target market. With the help of AI, we were able to build a more cost-effective solution."
 order: 1
 thumbnail: "/images/projects/klara/thumbnail.png"
 heroImages:
@@ -23,14 +24,11 @@ heroImages:
   - src: "/images/projects/klara/emission-page.png"
     caption: "Emission page"
     size: "large"
-  - src: "/images/projects/klara/overview-page.png"
-    caption: "Overview page"
+  - src: "/images/projects/klara/thumbnail.png"
+    caption: "Klara brand"
     size: "small"
+timelineImage: 2 
 ---
-
-## Introduction
-
-Klara is a carbon accounting platform designed for small businesses in Norway. Our clients wanted to create a more affordable solution, as existing options were too expensive for their target market. With the help of AI, we were able to build a more cost-effective solution.
 
 ## My Design Role
 

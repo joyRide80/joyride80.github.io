@@ -1,26 +1,39 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<BaseLayout title="About — joy·object" description="Joy is a Danish/Thai product designer and creative technologist living in Oslo with 17+ years of experience.">
+<BaseLayout
+  title="About — joy·object"
+  description="I'm joy, a product designer and creative technologist living in Oslo with more than a decade years of experience."
+  navActive="about"
+>
   <div class="about">
-    <!-- Header -->
-    <header class="project__header" style="display:flex;justify-content:space-between;align-items:flex-start;padding:20px var(--page-padding);">
-      <a href="/" class="type-logo home__logo" style="text-decoration:none;color:var(--gray-900);">
-        joy<span class="home__logo-dot"></span>object
-      </a>
-    </header>
+    <!-- Left Column: Header & Nav -->
+    <div class="about__left-col">
+      <header>
+        <a
+          href="/"
+          class="type-logo home__logo"
+          style="text-decoration:none;color:var(--gray-900);"
+        >
+          joy<span class="home__logo-dot"></span>object
+        </a>
+      </header>
 
-    <!-- Navigation -->
-    <nav class="home__nav" style="position:absolute;top:80px;left:26px;display:flex;flex-direction:column;gap:8px;z-index:10;">
-      <a href="/" class="btn-light">Work</a>
-      <a href="/about" class="btn-light is-active">
-        About
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;">
-          <span style="width:4px;height:4px;background:var(--gray-900);border-radius:50%;display:block;"></span>
-        </span>
-      </a>
-    </nav>
+      <nav class="about__nav">
+        <a href="/" class="btn-light">Work</a>
+        <a href="/about" class="btn-light is-active">
+          About
+          <span
+            style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;"
+          >
+            <span
+              style="width:4px;height:4px;background:var(--gray-900);border-radius:50%;display:block;"
+            ></span>
+          </span>
+        </a>
+      </nav>
+    </div>
 
     <!-- Content -->
     <div class="about__content">
@@ -39,7 +52,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <div class="about__right">
         <!-- ASCII Art -->
         <div class="about__ascii type-ascii">
-{`      ___           ___           ___       ___       ___     
+          {
+            `      ___           ___           ___       ___       ___     
      /\\__\\         /\\  \\         /\\__\\     /\\__\\     /\\  \\    
     /:/  /        /::\\  \\       /:/  /    /:/  /    /::\\  \\   
    /:/__/        /:/\\:\\  \\     /:/  /    /:/  /    /:/\\:\\  \\  
@@ -49,58 +63,112 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       \\::/  /   \\:\\ \\:\\__\\    \\:\\  \\    \\:\\  \\    \\:\\  /:/  / 
       /:/  /     \\:\\ \\/__/     \\:\\  \\    \\:\\  \\    \\:\\/:/  /  
      /:/  /       \\:\\__\\        \\:\\__\\    \\:\\__\\    \\::/  /   
-     \\/__/         \\/__/         \\/__/     \\/__/     \\/__/    `}
+     \\/__/         \\/__/         \\/__/     \\/__/     \\/__/    `
+          }
         </div>
 
         <!-- Intro -->
         <p class="about__intro">
-          My name is Joy, a Danish/Thai living in Oslo.
-          I'm a product designer and creative
-          technologist with 17+ years of experience, and
-          lately most of my energy goes into designing
-          AI-native products, figuring out how to make
-          generative systems feel intuitive, playful,
+          I'm joy, a Danish/Thai living in Oslo. I'm a product designer
+          and creative technologist with more than a decade years of experience.
+          Lately most of my energy goes into designing AI-native products,
+          figuring out how to make generative systems feel intuitive, playful,
           and genuinely useful.
         </p>
 
         <!-- Body -->
         <div class="about__body">
           <p>
-            I'm currently at <a href="http://megalearn.se/" target="_blank" rel="noopener">Megalearn</a>
-            (the ed-tech startup I co-founded), where I'm leading the design and development of
-            a browser-based multiplayer <a href="http://megalearn.ai/" target="_blank" rel="noopener">educational game</a>
+            I'm currently at <a
+              href="http://megalearn.se/"
+              target="_blank"
+              rel="noopener">Megalearn</a
+            >
+            (the ed-tech startup I co-founded), where I'm leading the design and development
+            of a browser-based multiplayer <a
+              href="http://megalearn.ai/"
+              target="_blank"
+              rel="noopener">educational game</a
+            >
             powered by generative AI and Three.js. I also work as design lead at
-            <a href="http://skalar.no/" target="_blank" rel="noopener">Skalar</a>, where I designed
-            an AI-driven tool helping small businesses in Norway manage their carbon emissions.
+            <a href="http://skalar.no/" target="_blank" rel="noopener">Skalar</a
+            >, where I designed an AI-driven tool helping small businesses in
+            Norway manage their carbon emissions.
           </p>
 
           <p>
             Before that, I spent 4 years as a senior product designer at
-            <a href="http://kahoot.com/" target="_blank" rel="noopener">Kahoot!</a>, the game-based
-            learning platform played by over a billion players yearly. And before Oslo, while living in
-            Copenhagen, I was a senior product designer at Falcon.io (now
-            <a href="https://www.brandwatch.com/" target="_blank" rel="noopener">Brandwatch</a>), a social
-            media management tool, Graduateland (now
-            <a href="https://www.jobteaser.com/en" target="_blank" rel="noopener">Jobteaser</a>), a leading
-            job portal in Europe, and Leo Innovation Lab, a health tech incubator. I also spent almost 5
-            years at <a href="https://podio.com/" target="_blank" rel="noopener">Podio</a> designing an
-            online productivity tool, before it was acquired by
-            <a href="https://www.citrix.com/" target="_blank" rel="noopener">Citrix</a>.
+            <a href="http://kahoot.com/" target="_blank" rel="noopener"
+              >Kahoot!</a
+            >, the game-based learning platform played by over a billion players
+            yearly. And before Oslo, while living in Copenhagen, I was a senior
+            product designer at Falcon.io (now
+            <a href="https://www.brandwatch.com/" target="_blank" rel="noopener"
+              >Brandwatch</a
+            >), a social media management tool, Graduateland (now
+            <a
+              href="https://www.jobteaser.com/en"
+              target="_blank"
+              rel="noopener">Jobteaser</a
+            >), a leading job portal in Europe, and Leo Innovation Lab, a health
+            tech incubator. I also spent almost 5 years at <a
+              href="https://podio.com/"
+              target="_blank"
+              rel="noopener">Podio</a
+            > designing an online productivity tool, before it was acquired by
+            <a href="https://www.citrix.com/" target="_blank" rel="noopener"
+              >Citrix</a
+            >.
           </p>
+          <p>
+            I'm a life long learner. My interests are varied, ranging from
+            illustration, brain, and cognitive science to AI and creative
+            coding. I enjoy building casual games in my spare time since I
+            believe games are an excellent medium for people to learn about
+            complex systems. As I was trained as an architect, I still work on
+            some small residential projects.
+          </p>
+
+          <h3
+            style="font-family: var(--font-mono); font-size: 14px; font-weight: 400; line-height: 25px; letter-spacing: 0.4px; text-transform: uppercase; color: var(--gray-600); margin-top: 48px; margin-bottom: 16px;"
+          >
+            Background & Education
+          </h3>
+          <p>
+            Before my career in digital products, I lived in Kyoto as a
+            researcher, where I researched Japanese Boy Comics (Shonen manga) at
+            Kyoto Seika University. And for many years, I taught at Thammasat
+            Design School in Bangkok.
+          </p>
+          <ul style="list-style: none; padding-left: 0; margin-bottom: 24px;">
+            <li
+              style="font-family: var(--font-body); font-size: 21px; line-height: 32px; margin-bottom: 8px;"
+            >
+              M.Sc. Media Technology and Games, IT University of Copenhagen
+            </li>
+            <li
+              style="font-family: var(--font-body); font-size: 21px; line-height: 32px; margin-bottom: 8px;"
+            >
+              M.Arch. Architecture and Urban Development, KU Leuven (cum laude)
+            </li>
+            <li
+              style="font-family: var(--font-body); font-size: 21px; line-height: 32px; margin-bottom: 8px;"
+            >
+              B.Arch. Architecture, Chulalongkorn University (1st honours)
+            </li>
+          </ul>
         </div>
 
         <!-- Download CV -->
         <div class="about__cv-btn">
-          <a href="#" class="btn-dark">Download my CV</a>
+          <a
+            href="https://www.dropbox.com/scl/fi/yhlreq9gdn46pm3bekvt7/Joy-CV-April-2026.pdf?rlkey=3rotx4qeflz0lju4jf29zzsue&st=koj8bpiu&dl=0"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-dark">Download my CV</a
+          >
         </div>
       </div>
     </div>
-
-    <!-- Contact -->
-    <div style="position:absolute;bottom:20px;left:var(--page-padding);z-index:10;">
-      <button class="btn-light" id="btn-contact">Get in touch</button>
-    </div>
   </div>
-
-  <script src="../scripts/contact.js"></script>
 </BaseLayout>

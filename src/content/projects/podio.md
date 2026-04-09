@@ -10,9 +10,11 @@ tags:
   - "UX"
   - "Lo-fi and Hi-fi prototype"
   - "User Interview"
-category: "Productivity"
+category: "Productivity, SaaS"
+introduction: 'As a project management tool, Podio empowers users to tailor their workflow to their specific needs. However, this flexibility also introduces complexity, making it challenging for some users to navigate the system. Our user base is diverse, with different industries utilizing Podio in unique ways. For instance, advertising agencies rely heavily on the activity stream, while recruiting companies focus on tasks. To unlock Podio''s full potential, users must understand and adapt to its underlying structure, which consists of Items, Apps, Workspaces, and Organizations. In Podio, an "Item" is a versatile term that represents any type of user-generated content, such as meetings, contacts, projects, or sales leads. Users have the freedom to customize their Item names, but despite this flexibility, we noticed a concerning trend: new users were creating fewer and fewer Items within the platform.'
 order: 5
 thumbnail: "/images/projects/podio/thumbnail.png"
+
 heroImages:
   - src: "/images/projects/podio/old-vs-new.png"
     caption: "Old vs new item page"
@@ -23,11 +25,9 @@ heroImages:
   - src: "/images/projects/podio/relationship-diagram.png"
     caption: "Item relationship diagram"
     size: "small"
+timelineImage: -1
+timelineAspect: 1.6
 ---
-
-## The brief
-
-As a project management tool, Podio empowers users to tailor their workflow to their specific needs. However, this flexibility also introduces complexity, making it challenging for some users to navigate the system. Our user base is diverse, with different industries utilizing Podio in unique ways. For instance, advertising agencies rely heavily on the activity stream, while recruiting companies focus on tasks. To unlock Podio's full potential, users must understand and adapt to its underlying structure, which consists of Items, Apps, Workspaces, and Organizations. In Podio, an "Item" is a versatile term that represents any type of user-generated content, such as meetings, contacts, projects, or sales leads. Users have the freedom to customize their Item names, but despite this flexibility, we noticed a concerning trend: new users were creating fewer and fewer Items within the platform.
 
 ![Podio structure](/images/projects/podio/structure.png)
 
@@ -40,7 +40,7 @@ Why users didn't create enough items?
 - 40% of the item page is dedicated to navigation. The content did not stand out, and it was hard for users to focus on the content.
 - Podio core value — Structure and workflow are abstract that it's not apparent to see on the interface compared with task management or calendar tool.
 
-![Old vs new item page. The blue area indicates the area dedicated to navigation.](/images/projects/podio/old-vs-new.png)
+<img src="/images/projects/podio/old-vs-new.png" alt="Old vs new item page — the blue area indicates navigation" data-cycle="/images/projects/podio/old-vs-new.png,/images/projects/podio/structure.png,/images/projects/podio/thumbnail.png" />
 
 ## The process
 
