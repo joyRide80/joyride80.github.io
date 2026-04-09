@@ -133,14 +133,16 @@ const { title, headline, subtitle, year, url, tags, category, heroImages, introd
 
 <script define:vars={{ baseUrl: import.meta.env.BASE_URL }}>
   document.addEventListener("DOMContentLoaded", () => {
-    // Prefix markdown images for subpath compatibility
+    // Prefix all images and videos for subpath compatibility
     const prefix = baseUrl.replace(/\/$/, "");
-    document.querySelectorAll('.project__content img, .project__content video, .project__content source').forEach(el => {
-      const src = el.getAttribute('src');
-      if (src && src.startsWith('/images/')) {
-        el.setAttribute('src', prefix + src);
-      }
-    });
+    if (prefix) {
+      document.querySelectorAll('img, video, source').forEach(el => {
+        const src = el.getAttribute('src');
+        if (src && src.startsWith('/images/')) {
+          el.setAttribute('src', prefix + src);
+        }
+      });
+    }
 
     const CYCLE_INTERVAL = 320;
 
