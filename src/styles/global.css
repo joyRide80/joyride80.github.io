@@ -4,13 +4,6 @@
 
 /* ---------- Font Faces ---------- */
 
-@font-face {
-  font-family: "Pantasia";
-  src: url("/fonts/Pantasia-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
 
 /* Google Fonts loaded via <link> in BaseLayout.astro:
    - Source Serif 4

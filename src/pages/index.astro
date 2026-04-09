@@ -91,15 +91,15 @@ const projects = (await getCollection('projects')).sort(compareProjectCollection
       url: p.data.url || '',
       category: p.data.category,
       order: p.data.order,
-      thumbnail: p.data.thumbnail ? (p.data.thumbnail.startsWith('/') ? import.meta.env.BASE_URL.replace(/\/$/, '') + p.data.thumbnail : p.data.thumbnail) : '',
+      thumbnail: p.data.thumbnail ? (p.data.thumbnail.startsWith('/') && !p.data.thumbnail.startsWith(import.meta.env.BASE_URL) ? import.meta.env.BASE_URL.replace(/\/$/, '') + p.data.thumbnail : p.data.thumbnail) : '',
       timelineImage: p.data.timelineImage,
       timelineAspect: p.data.timelineAspect,
       timelineCycle: p.data.timelineCycle,
       timelineVideoEmbed: p.data.timelineVideoEmbed,
-      timelineVideoPoster: p.data.timelineVideoPoster ? (p.data.timelineVideoPoster.startsWith('/') ? import.meta.env.BASE_URL.replace(/\/$/, '') + p.data.timelineVideoPoster : p.data.timelineVideoPoster) : '',
+      timelineVideoPoster: p.data.timelineVideoPoster ? (p.data.timelineVideoPoster.startsWith('/') && !p.data.timelineVideoPoster.startsWith(import.meta.env.BASE_URL) ? import.meta.env.BASE_URL.replace(/\/$/, '') + p.data.timelineVideoPoster : p.data.timelineVideoPoster) : '',
       heroImages: p.data.heroImages?.map(img => ({
         ...img,
-        src: img.src.startsWith('/') ? import.meta.env.BASE_URL.replace(/\/$/, '') + img.src : img.src
+        src: img.src.startsWith('/') && !img.src.startsWith(import.meta.env.BASE_URL) ? import.meta.env.BASE_URL.replace(/\/$/, '') + img.src : img.src
       })) || [],
     })) ,
     baseUrl: import.meta.env.BASE_URL
