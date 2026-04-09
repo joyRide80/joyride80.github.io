@@ -12,13 +12,13 @@ tags:
 category: "Edtech, AI"
 introduction: "Building a generative AI platform for education. Architected the design system and front-end using ThreeJS to create immersive 3D learning environments."
 order: 6
-thumbnail: "/joyObjectSite/images/projects/megalearn-ai/card.png"
+thumbnail: "/images/projects/megalearn-ai/card.png"
 heroImages:
-  - src: "/joyObjectSite/images/projects/megalearn-ai/desktop.png"
+  - src: "/images/projects/megalearn-ai/desktop.png"
     size: "large"
-  - src: "/joyObjectSite/images/projects/megalearn-ai/gameLevel.png"
+  - src: "/images/projects/megalearn-ai/gameLevel.png"
     size: "large"
-  - src: "/joyObjectSite/images/projects/megalearn-ai/cardFlip.mp4"
+  - src: "/images/projects/megalearn-ai/cardFlip.mp4"
     size: "small"
 timelineImage: 0
 ---
@@ -27,7 +27,7 @@ timelineImage: 0
 
 Although much good educational contents are available in many apps, they are relatively passive. As a result, learners can quickly lose their attention, like in their classes. So we devised the idea to use our existing technology to improve the learning experience.
 <figure>
-  <img src = "/joyObjectSite/images/projects/digital-science-teacher/sketch.jpg" alt="The hand-drawn sketch explores how to visualize the formation of planet earth">
+  <img src = "/images/projects/digital-science-teacher/sketch.jpg" alt="The hand-drawn sketch explores how to visualize the formation of planet earth">
     <figcaption>The hand-drawn sketch explores how to visualize the formation of planet earth</figcaption>
 </figure>
 

@@ -86,14 +86,21 @@ const {
   </body>
 </html>
 
-<style is:global define:vars={{ baseUrl: import.meta.env.BASE_URL.replace(/\/$/, "") }}>
+<style is:global>
   @import "../styles/global.css";
-
-  @font-face {
-    font-family: "Pantasia";
-    src: url(`${baseUrl}/fonts/Pantasia-Regular.woff2`) format("woff2");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-  }
 </style>
+
+<script define:vars={{ baseUrl: import.meta.env.BASE_URL.replace(/\/$/, "") }}>
+  // Dynamically inject @font-face for portability across subpaths/domains
+  const style = document.createElement('style');
+  style.textContent = `
+    @font-face {
+      font-family: "Pantasia";
+      src: url("${baseUrl}/fonts/Pantasia-Regular.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+  `;
+  document.head.appendChild(style);
+</script>

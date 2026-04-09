@@ -13,16 +13,16 @@ tags:
 category: "Edtech"
 introduction: "We decided to develop this app as a prototype first to learn if our target users would adopt this way of learning. So we created the app using Swift and pre-animated it in After Effects."
 order: 3
-thumbnail: "/joyObjectSite/images/projects/digital-science-teacher/video_preview.png"
+thumbnail: "/images/projects/digital-science-teacher/video_preview.png"
 timelineVideoEmbed: "https://player.vimeo.com/video/763201640?background=1&autopause=0&loop=1"
-timelineVideoPoster: "/joyObjectSite/images/projects/digital-science-teacher/video_preview.png"
+timelineVideoPoster: "/images/projects/digital-science-teacher/video_preview.png"
 timeLineAspect: 0.6 #vertical video
 heroImages:
-  - src: "/joyObjectSite/images/projects/digital-science-teacher/video_preview.png"
+  - src: "/images/projects/digital-science-teacher/video_preview.png"
     size: "small"
-  - src: "/joyObjectSite/images/projects/digital-science-teacher/digitalScienceTeacher.png"
+  - src: "/images/projects/digital-science-teacher/digitalScienceTeacher.png"
     size: "large"
-  - src: "/joyObjectSite/images/projects/digital-science-teacher/skydrive.png"
+  - src: "/images/projects/digital-science-teacher/skydrive.png"
     size: "large"
 ---
 
@@ -36,20 +36,20 @@ Although much good educational contents are available in many apps, they are rel
   </div>
 </figure>
 <figure>
-  <img src = "/joyObjectSite/images/projects/digital-science-teacher/sketch.jpg" alt="The hand-drawn sketch explores how to visualize the formation of planet earth">
+  <img src = "/images/projects/digital-science-teacher/sketch.jpg" alt="The hand-drawn sketch explores how to visualize the formation of planet earth">
     <figcaption>The hand-drawn sketch explores how to visualize the formation of planet earth</figcaption>
 </figure>
 ## Small screen
 
 Our target audience is middle school students shifting from iPad to laptop use. Most of them own smartphones. Believing that touchscreen interaction allows children to engage intuitively in learning, we developed an app primarily for smartphone users. The lessons in this app adapt to the individual child. They are suggested based on the child's interests and progress.
 
-![App screens](/joyObjectSite/images/projects/digital-science-teacher/app-screens.png)
+![App screens](/images/projects/digital-science-teacher/app-screens.png)
 
 ## Card layout prototype
 
 We created our first prototype using the concept of card layout. Each lesson only has 5-7 cards. Each card contains a question, and the learners have to interact actively with the cards.
 
-![Card layout prototype](/joyObjectSite/images/projects/digital-science-teacher/card-prototype.png)
+![Card layout prototype](/images/projects/digital-science-teacher/card-prototype.png)
 
 ## Card layout VS Chat dialogue
 

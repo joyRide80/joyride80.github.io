@@ -131,24 +131,33 @@ const { title, headline, subtitle, year, url, tags, category, heroImages, introd
   </div>
 </BaseLayout>
 
-<script>
+<script define:vars={{ baseUrl: import.meta.env.BASE_URL }}>
   document.addEventListener("DOMContentLoaded", () => {
+    // Prefix markdown images for subpath compatibility
+    const prefix = baseUrl.replace(/\/$/, "");
+    document.querySelectorAll('.project__content img, .project__content video, .project__content source').forEach(el => {
+      const src = el.getAttribute('src');
+      if (src && src.startsWith('/images/')) {
+        el.setAttribute('src', prefix + src);
+      }
+    });
+
     const CYCLE_INTERVAL = 320;
 
-    document.querySelectorAll<HTMLImageElement>("[data-cycle]").forEach((img) => {
+    document.querySelectorAll("[data-cycle]").forEach((img) => {
       const raw = img.dataset.cycle || "";
-      let pool: string[];
+      let pool;
       try {
         pool = JSON.parse(raw);
       } catch {
-        pool = raw.split(",").map((s: string) => s.trim());
+        pool = raw.split(",").map((s) => s.trim());
       }
       if (!pool.length) return;
 
       const originalSrc = img.getAttribute("src") || "";
       if (!pool.includes(originalSrc)) pool.unshift(originalSrc);
 
-      pool.forEach((src: string) => {
+      pool.forEach((src) => {
         const preload = new Image();
         preload.src = src;
       });
