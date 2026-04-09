@@ -4,7 +4,8 @@ import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://joyobject.org',
+  site: 'https://joyride80.github.io',
+  base: '/joyObjectSite',
   devToolbar: {
     enabled: false,
   },
