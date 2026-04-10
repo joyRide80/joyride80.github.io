@@ -39,8 +39,9 @@ const {
       rel="stylesheet"
     />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/favicon.svg`} />
+    <!-- Favicon (ico first — many clients still probe /favicon.ico at origin; layout + dev middleware keep base correct) -->
+    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
   </head>
   <body>
     <MobileNav active={navActive ?? null} />
@@ -76,7 +77,7 @@ const {
 
     <!-- Global Get in touch button (hidden on small screens — see mobile nav) -->
     <div class="global-contact">
-      <button type="button" class="btn-dark" data-open-contact-drawer>
+      <button type="button" class="btn-outline" data-open-contact-drawer>
         Get in touch
       </button>
     </div>

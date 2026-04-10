@@ -4,12 +4,31 @@
  */
 
 import gsap from "gsap";
+import { SplitText } from "gsap/SplitText";
 import { compareProjectsChronological } from "../lib/projectYear.ts";
 import { isVideoAssetPath } from "../lib/media.ts";
+
+gsap.registerPlugin(SplitText);
 
 document.addEventListener("DOMContentLoaded", () => {
   const projects = window.__PROJECTS__ || [];
   if (!projects.length) return;
+  const basePrefix = (window.__BASE_URL__ || "/").replace(/\/$/, "");
+
+  function normalizeAssetPath(path) {
+    if (!path) return path;
+    if (!basePrefix) return path;
+    if (
+      /^(https?:)?\/\//.test(path) ||
+      path.startsWith("data:") ||
+      path.startsWith("blob:")
+    ) {
+      return path;
+    }
+    if (path.startsWith(`${basePrefix}/`)) return path;
+    if (path.startsWith("/")) return basePrefix + path;
+    return path;
+  }
 
   const cloudCanvas = document.getElementById("cloud-canvas");
   const timelineTrack = document.getElementById("timeline-track");
@@ -17,9 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const timelineView = document.getElementById("timeline-view");
   const overlay = document.getElementById("project-overlay");
   const overlayTitle = document.getElementById("overlay-title");
-  const overlayUrl = document.getElementById("overlay-url");
-  const overlayCategory = document.getElementById("overlay-category");
-  const overlayLink = document.getElementById("overlay-link");
+  const overlaySubtitle = document.getElementById("overlay-subtitle");
   const switchTrack = document.getElementById("switch-track");
   const switchLabels = document.querySelectorAll(".switch__label");
 
@@ -37,10 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function getProjectImagePool(project) {
     const pool = [];
     if (project.heroImages?.length) {
-      project.heroImages.forEach((img) => pool.push(img.src));
+      project.heroImages.forEach((img) =>
+        pool.push(normalizeAssetPath(img.src)),
+      );
     }
-    if (project.thumbnail && !pool.includes(project.thumbnail)) {
-      pool.push(project.thumbnail);
+    const normalizedThumb = normalizeAssetPath(project.thumbnail);
+    if (normalizedThumb && !pool.includes(normalizedThumb)) {
+      pool.push(normalizedThumb);
     }
     return pool;
   }
@@ -60,9 +80,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function appendCoverMedia(container, src, altText) {
+    const normalizedSrc = normalizeAssetPath(src);
     if (isVideoAssetPath(src)) {
       const v = document.createElement("video");
-      v.src = src;
+      v.src = normalizedSrc;
       v.muted = true;
       v.loop = true;
       v.playsInline = true;
@@ -74,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     const img = document.createElement("img");
-    img.src = src;
+    img.src = normalizedSrc;
     img.alt = altText || "";
     img.loading = "lazy";
     container.appendChild(img);
@@ -101,8 +122,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function generateCloudPositions() {
-    const viewW = window.innerWidth;
-    const viewH = window.innerHeight;
+    // Use actual cloud container bounds, not full viewport
+    const containerRect = cloudCanvas
+      ? cloudCanvas.parentElement.getBoundingClientRect()
+      : null;
+    const viewW = containerRect ? containerRect.width : window.innerWidth;
+    const viewH = containerRect ? containerRect.height : window.innerHeight;
     const centerX = viewW * 0.5;
     const centerY = viewH * 0.5;
     const gap = 12;
@@ -113,6 +138,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalProjects = projects.length;
     const items = [];
     let seed = 42;
+
+    // Exclusion zone so cloud images never overlap the center slogan
+    const sloganCanvasY =
+      window.innerHeight / 2 - (containerRect ? containerRect.top : 120);
+    const exW = isMobile ? 280 : 500;
+    const exH = isMobile ? 180 : 300;
+    items.push({
+      x: centerX - exW / 2,
+      y: sloganCanvasY - exH / 2,
+      w: exW,
+      h: exH,
+      _exclusion: true,
+    });
 
     projects.forEach((project, pIndex) => {
       const angle = (pIndex / totalProjects) * Math.PI * 2 - Math.PI / 2;
@@ -148,10 +186,20 @@ document.addEventListener("DOMContentLoaded", () => {
         let attempts = 0;
         while (attempts < 60) {
           let collides = false;
-          for (const placed of items) {
-            if (rectsOverlap(candidate, placed, gap)) {
-              collides = true;
-              break;
+          // Check bounds to ensure items stay within the visible cloud area
+          if (
+            candidate.x < gap ||
+            candidate.y < gap ||
+            candidate.x + candidate.w > viewW - gap ||
+            candidate.y + candidate.h > viewH - gap
+          ) {
+            collides = true;
+          } else {
+            for (const placed of items) {
+              if (rectsOverlap(candidate, placed, gap)) {
+                collides = true;
+                break;
+              }
             }
           }
           if (!collides) break;
@@ -161,6 +209,16 @@ document.addEventListener("DOMContentLoaded", () => {
           candidate.y += Math.sin(nudgeAngle) * nudgeDist;
           attempts++;
         }
+
+        // Clamp to container bounds so it never bleeds out (which looks like it's cut off)
+        candidate.x = Math.max(
+          gap,
+          Math.min(candidate.x, viewW - candidate.w - gap),
+        );
+        candidate.y = Math.max(
+          gap,
+          Math.min(candidate.y, viewH - candidate.h - gap),
+        );
 
         items.push({
           project,
@@ -176,7 +234,36 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    return items;
+    // Force any items still overlapping the exclusion zone outward
+    const exclusion = items.find((i) => i._exclusion);
+    if (exclusion) {
+      const exCX = exclusion.x + exclusion.w / 2;
+      const exCY = exclusion.y + exclusion.h / 2;
+
+      items.forEach((item) => {
+        if (item._exclusion) return;
+        if (!rectsOverlap(item, exclusion, gap)) return;
+
+        const itemCX = item.x + item.w / 2;
+        const itemCY = item.y + item.h / 2;
+        let dx = itemCX - exCX;
+        let dy = itemCY - exCY;
+        if (dx === 0 && dy === 0) dx = 1;
+        const angle = Math.atan2(dy, dx);
+        const dist =
+          Math.max(exclusion.w, exclusion.h) / 2 +
+          Math.max(item.w, item.h) / 2 +
+          gap;
+        item.x = exCX + Math.cos(angle) * dist - item.w / 2;
+        item.y = exCY + Math.sin(angle) * dist - item.h / 2;
+
+        // Clamp to ensure it doesn't get pushed out of bounds by exclusion
+        item.x = Math.max(gap, Math.min(item.x, viewW - item.w - gap));
+        item.y = Math.max(gap, Math.min(item.y, viewH - item.h - gap));
+      });
+    }
+
+    return items.filter((item) => !item._exclusion);
   }
 
   // ============================================================
@@ -232,10 +319,11 @@ document.addEventListener("DOMContentLoaded", () => {
     sorted.forEach((project) => {
       const idx = project.timelineImage ?? 0;
       const heroImages = project.heroImages?.length ? project.heroImages : [];
-      const imgSrc =
+      const imgSrc = normalizeAssetPath(
         idx === -1
           ? project.thumbnail
-          : heroImages[idx]?.src || heroImages[0]?.src || project.thumbnail;
+          : heroImages[idx]?.src || heroImages[0]?.src || project.thumbnail,
+      );
 
       const el = document.createElement("div");
       el.className = "timeline__item";
@@ -253,7 +341,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const imagePool = getProjectImagePool(project);
       el._imagePool = imagePool;
-      el._originalSrc = imgSrc;
+      el._originalSrc = normalizeAssetPath(imgSrc);
       el._autoCycle = !!project.timelineCycle;
 
       if (project.timelineVideoEmbed) {
@@ -261,7 +349,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const posterEl = document.createElement("img");
         posterEl.className = "timeline__video-poster";
-        posterEl.src = project.timelineVideoPoster || imgSrc;
+        posterEl.src = normalizeAssetPath(
+          project.timelineVideoPoster || imgSrc,
+        );
         posterEl.alt = `${project.title} preview`;
         posterEl.loading = "lazy";
         el.appendChild(posterEl);
@@ -357,7 +447,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     startTimelineCycle(hoveredEl);
-    showOverlay(project, hoveredEl);
+    showOverlay(project);
   }
 
   function handleTimelineLeave() {
@@ -395,7 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    showOverlay(item.project, el);
+    showOverlay(item.project);
   }
 
   function handleItemLeave() {
@@ -409,69 +499,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // ============================================================
   // Overlay
   // ============================================================
-  function showOverlay(project, nearEl) {
-    if (
-      !overlay ||
-      !overlayTitle ||
-      !overlayUrl ||
-      !overlayCategory ||
-      !overlayLink
-    )
-      return;
+  function showOverlay(project) {
+    if (!overlay || !overlayTitle || !overlaySubtitle) return;
 
-    overlayTitle.textContent = project.title;
-    overlayUrl.textContent = project.url || "";
-    overlayCategory.textContent = project.category;
-    const baseUrl = window.__BASE_URL__ || "/";
-    overlayLink.href = `${baseUrl.replace(/\/$/, "")}/projects/${project.slug}`;
-
-    // Position near hovered element
-    const rect = nearEl.getBoundingClientRect();
-    let top;
-    let left;
-
-    const overlayW = 270;
-
-    if (activeView === "timeline") {
-      // Timeline: overlay above thumb; right-align card to image right edge.
-      top = rect.top - 238;
-      left = rect.right - overlayW;
-    } else {
-      // Cloud: place overlay beside hovered image.
-      top = rect.top;
-      left = rect.right + 16;
-
-      if (left + 280 > window.innerWidth) {
-        left = rect.left - 286;
-      }
-    }
-
-    // Keep on screen for both modes
-    if (top + 238 > window.innerHeight) {
-      top = window.innerHeight - 254;
-    }
-    if (top < 16) top = 16;
-    if (left < 16) left = 16;
-    if (left + overlayW > window.innerWidth - 16) {
-      left = window.innerWidth - overlayW - 16;
-    }
-
-    overlay.style.position = "fixed";
-    overlay.style.top = `${top}px`;
-    overlay.style.left = `${left}px`;
+    overlayTitle.textContent = project.title || "";
+    overlaySubtitle.textContent = project.subtitle || project.headline || "";
 
     gsap.killTweensOf(overlay);
     gsap.fromTo(
       overlay,
-      { opacity: 0, y: -36 },
+      { opacity: 0, y: 10 },
       {
         opacity: 1,
         y: 0,
-        duration: 0.45,
+        duration: 0.35,
         ease: "power2.out",
-        onStart: () => {
-          overlay.style.pointerEvents = "auto";
-        },
       },
     );
   }
@@ -481,12 +523,9 @@ document.addEventListener("DOMContentLoaded", () => {
     gsap.killTweensOf(overlay);
     gsap.to(overlay, {
       opacity: 0,
-      y: -20,
+      y: 10,
       duration: 0.25,
       ease: "power2.in",
-      onComplete: () => {
-        overlay.style.pointerEvents = "none";
-      },
     });
   }
 
@@ -573,15 +612,19 @@ document.addEventListener("DOMContentLoaded", () => {
     switchTrack.dataset.active = view;
     hideOverlay();
 
+    const sloganEl = document.getElementById("slogan");
+
     if (view === "cloud") {
       cloudView.style.display = "block";
       timelineView.classList.remove("is-active");
       gsap.fromTo(cloudView, { opacity: 0 }, { opacity: 1, duration: 0.4 });
+      if (sloganEl) gsap.to(sloganEl, { opacity: 1, duration: 0.3 });
     } else {
       cloudView.style.display = "none";
       timelineView.classList.add("is-active");
       gsap.fromTo(timelineView, { opacity: 0 }, { opacity: 1, duration: 0.4 });
       scrollTimelineToEnd();
+      if (sloganEl) gsap.to(sloganEl, { opacity: 0, duration: 0.3 });
     }
   }
 
@@ -599,30 +642,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ============================================================
-  // Intro Animation
+  // Intro animation — typing slogan + page reveal
   // ============================================================
   const INTRO_KEY = "joy__intro_played";
   const isFirstVisit = !sessionStorage.getItem(INTRO_KEY);
 
   function playIntro() {
-    const overlay = document.getElementById("intro-overlay");
-    const heroText = document.getElementById("intro-hero");
-
     const logo = document.getElementById("site-logo");
     const nav = document.getElementById("main-nav");
     const bio = document.getElementById("home-bio");
     const switchEl = document.querySelector(".home__switch");
+    const contactEl = document.querySelector(".global-contact");
     const cloudItems = Array.from(document.querySelectorAll(".cloud__item"));
 
-    // Hide page elements until their reveal step
-    gsap.set([logo, nav, bio, switchEl].filter(Boolean), { opacity: 0 });
+    const sloganEl = document.getElementById("slogan");
+    const sloganText = document.getElementById("slogan-text");
+    const parenLeft = sloganEl?.querySelector(".slogan__paren--left");
+    const parenRight = sloganEl?.querySelector(".slogan__paren--right");
+
+    gsap.set([logo, nav, bio, switchEl, contactEl].filter(Boolean), {
+      opacity: 0,
+    });
     gsap.set(cloudItems, {
       opacity: 0,
       scale: 0.8,
       transformOrigin: "center center",
     });
 
-    // Divide cloud items into 3 random groups
     const shuffled = [...cloudItems].sort(() => Math.random() - 0.5);
     const third = Math.ceil(shuffled.length / 3);
     const group1 = shuffled.slice(0, third);
@@ -631,49 +677,85 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const tl = gsap.timeline();
 
-    if (isFirstVisit && overlay && heroText) {
-      // Full intro: hero text on black → color flip → reveal page
+    if (isFirstVisit && sloganEl && sloganText) {
       sessionStorage.setItem(INTRO_KEY, "1");
 
-      tl.to(heroText, {
-        clipPath: "inset(0 0% 0 0)",
-        duration: 0.8,
-        ease: "power3.out",
+      const SLOGAN = "DESIGNING WITH CODE,BUILDING WITH PURPOSE.";
+
+      // Hide parentheses off to each side
+      gsap.set(parenLeft, { autoAlpha: 0, x: -60 });
+      gsap.set(parenRight, { autoAlpha: 0, x: 60 });
+
+      // Enlarge text for dramatic intro
+      sloganText.textContent = SLOGAN;
+      gsap.set(sloganText, {
+        fontSize: 64,
+        lineHeight: "72px",
+        width: "auto",
+        maxWidth: "min(700px, 80vw)",
+        textTransform: "uppercase",
       });
 
-      tl.to({}, { duration: 0.8 });
-
-      tl.to(overlay, {
-        backgroundColor: "#f5f1e6",
-        duration: 0.12,
-        ease: "none",
+      // Split into lines + chars for staggered reveal
+      const split = SplitText.create(sloganText, {
+        type: "lines, chars",
+        linesClass: "intro-line",
+        charsClass: "intro-char",
       });
-      tl.to(heroText, { color: "#1c1c1c", duration: 0.12, ease: "none" }, "<");
 
-      tl.to({}, { duration: 0.4 });
+      gsap.set(split.chars, { opacity: 0, y: 20 });
 
-      const handoff = "handoff";
+      // Phase 1 — reveal chars with stagger
+      tl.to(split.chars, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        stagger: 0.03,
+        ease: "power2.out",
+      });
+
+      // Phase 2 — hold
+      tl.to({}, { duration: 0.6 });
+
+      // Phase 3 — revert split, then scale text down to Figma spec
+      const scaleLabel = "scaleDown";
+      tl.addLabel(scaleLabel);
+
+      tl.call(() => split.revert(), null, scaleLabel);
+
       tl.to(
-        heroText,
-        { opacity: 0, duration: 0.8, ease: "power3.out" },
-        handoff,
-      );
-      tl.to(
-        overlay,
+        sloganText,
         {
-          opacity: 0,
-          duration: 0.45,
-          ease: "power3.out",
-          onComplete: () => overlay.remove(),
+          fontSize: 14,
+          lineHeight: "16px",
+          width: 158,
+          maxWidth: "none",
+          duration: 0.8,
+          ease: "power3.inOut",
         },
-        handoff,
-      );
-      tl.to(
-        [logo, nav, bio, switchEl].filter(Boolean),
-        { opacity: 1, duration: 0.5, ease: "power3.out" },
-        handoff,
+        scaleLabel,
       );
 
+      // Phase 4 — parentheses clamp in from sides
+      tl.to(
+        parenLeft,
+        { autoAlpha: 1, x: 0, duration: 0.5, ease: "power3.out" },
+        `${scaleLabel}+=0.4`,
+      );
+      tl.to(
+        parenRight,
+        { autoAlpha: 1, x: 0, duration: 0.5, ease: "power3.out" },
+        `${scaleLabel}+=0.4`,
+      );
+
+      // Phase 5 — reveal page chrome + cloud items (after scale + parens finish)
+      const revealLabel = `${scaleLabel}+=1.0`;
+
+      tl.to(
+        [logo, nav, bio, switchEl, contactEl].filter(Boolean),
+        { opacity: 1, duration: 0.5, ease: "power3.out" },
+        revealLabel,
+      );
       tl.to(
         group1,
         {
@@ -683,7 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ease: "power3.out",
           stagger: 0.04,
         },
-        `${handoff}+=0.12`,
+        `${revealLabel}+=0.12`,
       );
       tl.to(
         group2,
@@ -708,10 +790,8 @@ document.addEventListener("DOMContentLoaded", () => {
         "-=0.3",
       );
     } else {
-      // Return visit: skip hero, just reveal logo/nav/bio + cloud
-      if (overlay) overlay.remove();
-
-      tl.to([logo, nav, bio, switchEl].filter(Boolean), {
+      // Return visit — slogan already at final state, just reveal page
+      tl.to([logo, nav, bio, switchEl, contactEl].filter(Boolean), {
         opacity: 1,
         duration: 0.45,
         ease: "power2.out",

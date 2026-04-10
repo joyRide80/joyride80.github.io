@@ -1,20 +1,17 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
-import { getCollection } from 'astro:content';
-import { compareProjectCollectionEntries } from '../lib/projectYear';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import { getCollection } from "astro:content";
+import { compareProjectCollectionEntries } from "../lib/projectYear";
+import { withBasePublicPath } from "../lib/withBasePublicPath";
 
-const projects = (await getCollection('projects')).sort(compareProjectCollectionEntries);
+const projects = (await getCollection("projects")).sort(
+  compareProjectCollectionEntries,
+);
+const baseUrl = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout navActive="work">
-  <!-- Intro Animation Overlay -->
-  <div class="intro-overlay" id="intro-overlay">
-    <div class="intro-hero type-h3" id="intro-hero">
-      DESIGNING WITH CODE,<br />BUILDING WITH PURPOSE.
-    </div>
-  </div>
-
   <div class="home" id="home">
     <!-- Header -->
     <Header currentPage="work" variant="home" />
@@ -22,12 +19,27 @@ const projects = (await getCollection('projects')).sort(compareProjectCollection
     <!-- Bio text -->
     <div class="home__bio" id="home-bio">
       <p class="home__bio-text">
-        Hi, I'm joy—an Oslo-based product designer with over a decade of experience. I build AI-native products with the precision of an architect and the mindset of a founder. After four years at Kahoot! and co-founding my own ed-tech startup, I now help companies turn complex generative systems into intuitive, playful, and impactful products.
+        Hi, I'm joy—an Oslo-based product designer with over a decade of
+        experience. I build AI-native products with the precision of an
+        architect and the mindset of a founder.Previously at Kahoot! <a
+          href={`${import.meta.env.BASE_URL}about/`}
+          style="text-decoration: none; color: var(--gray-600);"
+          >More about me</a
+        >
       </p>
       <div class="home__cta">
         <a href="mailto:joyleelawat@gmail.com" class="btn-dark" id="btn-say-hi">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="white" stroke-width="1.5"/>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M4 10H16M16 10L11 5M16 10L11 15"
+              stroke="white"
+              stroke-width="1.5"></path>
           </svg>
           let's talk
         </a>
@@ -41,6 +53,13 @@ const projects = (await getCollection('projects')).sort(compareProjectCollection
       </div>
     </div>
 
+    <!-- Slogan (Figma node 2110:481) -->
+    <div class="slogan" id="slogan">
+      <span class="slogan__paren slogan__paren--left">(</span>
+      <span class="slogan__text" id="slogan-text">DESIGNING WITH CODE,BUILDING WITH PURPOSE.</span>
+      <span class="slogan__paren slogan__paren--right">)</span>
+    </div>
+
     <!-- Timeline View -->
     <div class="timeline" id="timeline-view">
       <div class="timeline__track" id="timeline-track">
@@ -48,20 +67,11 @@ const projects = (await getCollection('projects')).sort(compareProjectCollection
       </div>
     </div>
 
-    <!-- Project Overlay (shared between views) -->
-    <div class="project-overlay" id="project-overlay">
-      <div class="project-overlay__title" id="overlay-title"></div>
-      <div class="project-overlay__body">
-        <div class="project-overlay__meta">
-          <span class="project-overlay__url" id="overlay-url"></span>
-          <span class="project-overlay__category" id="overlay-category"></span>
-        </div>
-        <a class="project-overlay__link" id="overlay-link" href="#">
-          <span class="project-overlay__link-text">View project</span>
-          <svg class="project-overlay__link-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="#1c1c1c" stroke-width="1.5"/>
-          </svg>
-        </a>
+    <!-- Project caption (shared between views; Figma node 2110:478) -->
+    <div class="project-overlay-anchor" aria-live="polite" aria-atomic="true">
+      <div class="project-overlay" id="project-overlay">
+        <div class="project-overlay__title" id="overlay-title"></div>
+        <p class="project-overlay__subtitle" id="overlay-subtitle"></p>
       </div>
     </div>
 
@@ -75,60 +85,41 @@ const projects = (await getCollection('projects')).sort(compareProjectCollection
         <span class="switch__label" data-view="timeline">Timeline</span>
       </div>
     </div>
-
   </div>
 
-  <script define:vars={{ 
-    projectsData: projects.map(p => ({
-      slug: p.id,
-      title: p.data.title,
-      headline: p.data.headline,
-      subtitle: p.data.subtitle,
-      year: p.data.year,
-      url: p.data.url || '',
-      category: p.data.category,
-      order: p.data.order,
-      thumbnail: p.data.thumbnail ? (p.data.thumbnail.startsWith('/') && !p.data.thumbnail.startsWith(import.meta.env.BASE_URL) ? import.meta.env.BASE_URL.replace(/\/$/, '') + p.data.thumbnail : p.data.thumbnail) : '',
-      timelineImage: p.data.timelineImage,
-      timelineAspect: p.data.timelineAspect,
-      timelineCycle: p.data.timelineCycle,
-      timelineVideoEmbed: p.data.timelineVideoEmbed,
-      timelineVideoPoster: p.data.timelineVideoPoster ? (p.data.timelineVideoPoster.startsWith('/') && !p.data.timelineVideoPoster.startsWith(import.meta.env.BASE_URL) ? import.meta.env.BASE_URL.replace(/\/$/, '') + p.data.timelineVideoPoster : p.data.timelineVideoPoster) : '',
-      heroImages: p.data.heroImages?.map(img => ({
-        ...img,
-        src: img.src.startsWith('/') && !img.src.startsWith(import.meta.env.BASE_URL) ? import.meta.env.BASE_URL.replace(/\/$/, '') + img.src : img.src
-      })) || [],
-    })) ,
-    baseUrl: import.meta.env.BASE_URL
-  }}>
+  <script
+    define:vars={{
+      projectsData: projects.map((p) => ({
+        slug: p.id,
+        title: p.data.title,
+        headline: p.data.headline,
+        subtitle: p.data.subtitle,
+        year: p.data.year,
+        url: p.data.url || "",
+        category: p.data.category,
+        order: p.data.order,
+        thumbnail: p.data.thumbnail
+          ? withBasePublicPath(p.data.thumbnail, baseUrl) ?? p.data.thumbnail
+          : "",
+        timelineImage: p.data.timelineImage,
+        timelineAspect: p.data.timelineAspect,
+        timelineCycle: p.data.timelineCycle,
+        timelineVideoEmbed: p.data.timelineVideoEmbed,
+        timelineVideoPoster: p.data.timelineVideoPoster
+          ? withBasePublicPath(p.data.timelineVideoPoster, baseUrl) ??
+            p.data.timelineVideoPoster
+          : "",
+        heroImages:
+          p.data.heroImages?.map((img) => ({
+            ...img,
+            src: withBasePublicPath(img.src, baseUrl) ?? img.src,
+          })) || [],
+      })),
+      baseUrl,
+    }}
+  >
     window.__PROJECTS__ = projectsData;
     window.__BASE_URL__ = baseUrl;
   </script>
   <script src="../scripts/cloud.js"></script>
 </BaseLayout>
-
-<style>
-  .intro-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    background: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .intro-hero {
-    color: #fff;
-    text-align: left;
-    white-space: nowrap;
-    clip-path: inset(0 100% 0 0);
-  }
-
-  @media (max-width: 768px) {
-    .intro-hero {
-      white-space: normal;
-      padding: 0 var(--page-padding);
-    }
-  }
-</style>

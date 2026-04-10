@@ -39,6 +39,7 @@ Although much good educational contents are available in many apps, they are rel
   <img src = "/images/projects/digital-science-teacher/sketch.jpg" alt="The hand-drawn sketch explores how to visualize the formation of planet earth">
     <figcaption>The hand-drawn sketch explores how to visualize the formation of planet earth</figcaption>
 </figure>
+
 ## Small screen
 
 Our target audience is middle school students shifting from iPad to laptop use. Most of them own smartphones. Believing that touchscreen interaction allows children to engage intuitively in learning, we developed an app primarily for smartphone users. The lessons in this app adapt to the individual child. They are suggested based on the child's interests and progress.

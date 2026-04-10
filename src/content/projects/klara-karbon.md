@@ -27,7 +27,7 @@ heroImages:
   - src: "/images/projects/klara/thumbnail.png"
     caption: "Klara brand"
     size: "small"
-timelineImage: 2 
+timelineImage: 2
 ---
 
 ## My Design Role
@@ -66,13 +66,20 @@ Here are two screen images showing the evolution of the Transaction Detail page:
 
 Our initial design assumed expert users who would understand the calculation and emission factors. The interface focused on displaying results and emission factors from trusted sources.
 
-![Before MVP](/images/projects/klara/before-mvp.png)
-
 ### After MVP
 
 We redesigned the UI for regular users with limited knowledge of carbon emissions. The new design helps users understand the calculation process and is less focused on the source of emission factors.
 
-![After MVP](/images/projects/klara/after-mvp.png)
+<div class="project__content-collage" style="--collage-cols:2">
+<figure>
+<img src="/images/projects/klara/before-mvp.png" alt="Before MVP" loading="lazy" />
+<figcaption>Before MVP</figcaption>
+</figure>
+<figure>
+<img src="/images/projects/klara/after-mvp.png" alt="After MVP" loading="lazy" />
+<figcaption>After MVP</figcaption>
+</figure>
+</div>
 
 ## Launch and outcome
 

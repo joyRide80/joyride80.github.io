@@ -26,6 +26,7 @@ timelineImage: 0
 ## Header
 
 Although much good educational contents are available in many apps, they are relatively passive. As a result, learners can quickly lose their attention, like in their classes. So we devised the idea to use our existing technology to improve the learning experience.
+
 <figure>
   <img src = "/images/projects/digital-science-teacher/sketch.jpg" alt="The hand-drawn sketch explores how to visualize the formation of planet earth">
     <figcaption>The hand-drawn sketch explores how to visualize the formation of planet earth</figcaption>

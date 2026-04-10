@@ -4,7 +4,6 @@
 
 /* ---------- Font Faces ---------- */
 
-
 /* Google Fonts loaded via <link> in BaseLayout.astro:
    - Source Serif 4
    - DM Mono (400, 500)
@@ -284,6 +283,31 @@ ol {
   opacity: 0.85;
 }
 
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(228, 226, 213, 0.4);
+  color: var(--gray-900);
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--gray-900, #1c1c1c);
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 30px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    opacity 0.2s ease,
+    background 0.2s ease;
+}
+
+.btn-outline:hover {
+  background: rgba(228, 226, 213, 0.6);
+}
+
 /* ---------- Component: Switch ---------- */
 
 .switch {
@@ -329,88 +353,53 @@ ol {
   transform: translateX(37px);
 }
 
-/* ---------- Component: Project Overlay ---------- */
+/* ---------- Component: Project caption (home cloud / timeline hover) ---------- */
+
+.project-overlay-anchor {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 72px;
+  z-index: 8;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
 
 .project-overlay {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  width: 270px;
-  height: 238px;
+  align-items: center;
+  gap: 7px;
+  width: min(640px, calc(100vw - 2 * var(--page-padding)));
+  margin: 0 auto;
+  text-align: center;
   pointer-events: none;
   opacity: 0;
-  /* transform / opacity transitions: GSAP in cloud.js */
+  /* opacity / y: GSAP in cloud.js */
 }
 
 .project-overlay__title {
   font-family: var(--font-display);
-  font-size: 40px;
+  font-size: 25px;
   font-weight: 400;
-  line-height: 44px;
-  letter-spacing: -0.8px;
-  text-transform: uppercase;
-  text-align: right;
+  line-height: 32px;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--gray-900);
   width: 100%;
+  margin: 0;
 }
 
-.project-overlay__body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  width: 100%;
-  margin-top: auto;
-}
-
-.project-overlay__meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  width: 100%;
-  text-align: right;
-}
-
-.project-overlay__url {
+.project-overlay__subtitle {
   font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 24px;
-  color: var(--gray-900);
-}
-
-.project-overlay__category {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 24px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0;
   color: var(--gray-600);
-}
-
-.project-overlay__link {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
   width: 100%;
-  padding: 8px 0;
-  text-decoration: none;
-}
-
-.project-overlay__link-text {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 25px;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--gray-900);
-}
-
-.project-overlay__link-arrow {
-  width: 20px;
-  height: 20px;
+  margin: 0;
 }
 
 /* ---------- Component: Nav Prev/Next ---------- */
@@ -708,7 +697,10 @@ ol {
 
 .cloud {
   position: absolute;
-  inset: 0;
+  top: 180px;
+  left: 0;
+  right: 0;
+  bottom: 160px;
   cursor: grab;
   overflow: hidden;
 }
@@ -723,14 +715,37 @@ ol {
   height: 100%;
 }
 
-.cloud__tagline {
+/* ---------- Component: Slogan (cloud view center — Figma 2110:481) ---------- */
+
+.slogan {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 407px;
-  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 15;
   pointer-events: none;
+}
+
+.slogan__paren {
+  font-family: var(--font-display);
+  font-size: 38px;
+  line-height: 42px;
+  color: var(--gray-900);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.slogan__text {
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 16px;
+  color: var(--gray-900);
+  text-align: center;
+  text-transform: uppercase;
+  width: 158px;
 }
 
 .cloud__item {
@@ -864,29 +879,55 @@ img[data-cycle] {
 /* ---------- Layout: Project Page ---------- */
 
 .project {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  column-gap: 24px;
-  grid-template-rows: minmax(25vh, auto) minmax(25vh, auto) minmax(25vh, auto);
-  grid-auto-rows: auto;
-  row-gap: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   padding: 0 var(--page-padding) 96px;
   min-height: 100vh;
 }
 
 .project__header {
-  grid-column: 1 / span 5;
+  position: sticky;
+  top: 0;
+  z-index: 15;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding-top: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
+  padding-bottom: 12px;
+}
+
+/* Title grid; 5-row viewport bands (20vh each); headline ~top of 2nd band below sticky header */
+.project__hero-bands {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  column-gap: 24px;
+  width: 100%;
+  margin-top: max(0px, calc(20vh - 5.5rem));
+  margin-top: max(0px, calc(20svh - 5.5rem));
+}
+
+.project__top {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  width: 100%;
 }
 
 .project__title-group {
-  grid-column: 1 / span 5;
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
   align-content: start;
+}
+
+/* Below .project__top; flex + gap avoids margin collapse (48px before collage) */
+.project__hero-lower {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  width: 100%;
+  margin-top: clamp(40px, 14vh, 160px);
 }
 
 .project__title {
@@ -909,9 +950,10 @@ img[data-cycle] {
 }
 
 .project__intro {
-  grid-column: 1 / span 5;
   display: grid;
-  grid-template-columns: subgrid;
+  grid-template-columns: repeat(5, 1fr);
+  column-gap: 24px;
+  width: 100%;
 }
 
 .project__intro-content {
@@ -954,12 +996,12 @@ img[data-cycle] {
   text-transform: uppercase;
 }
 
-/* Project collage grid */
 .project__collage {
-  grid-column: 1 / span 5;
   display: grid;
-  grid-template-columns: subgrid;
+  grid-template-columns: repeat(5, 1fr);
+  column-gap: 24px;
   row-gap: 16px;
+  width: 100%;
 }
 
 .project__collage-item {
@@ -1051,7 +1093,6 @@ img[data-cycle] {
 
 /* Project footer */
 .project__footer {
-  grid-column: 1 / span 5;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1210,10 +1251,6 @@ img[data-cycle] {
     display: none !important;
   }
 
-  .project__header {
-    padding-right: calc(var(--page-padding) + 52px);
-  }
-
   body {
     font-size: 18px;
     line-height: 28px;
@@ -1232,9 +1269,8 @@ img[data-cycle] {
     align-items: center;
   }
 
-  /* Hide hover-only elements */
-  .project-overlay {
-    display: none;
+  .project-overlay-anchor {
+    bottom: 56px;
   }
 
   /* -- Home -- */
@@ -1246,12 +1282,24 @@ img[data-cycle] {
     padding: 80px var(--page-padding) 0;
   }
 
+  .cloud {
+    top: 260px;
+    bottom: 160px;
+  }
+
   .home__nav {
     top: 64px;
   }
 
-  .cloud__tagline {
-    width: 260px;
+  .slogan__text {
+    font-size: 12px;
+    line-height: 14px;
+    width: 130px;
+  }
+
+  .slogan__paren {
+    font-size: 28px;
+    line-height: 34px;
   }
 
   .timeline__track {
@@ -1267,8 +1315,24 @@ img[data-cycle] {
     padding: 0 var(--page-padding) 64px;
   }
 
+  .project__hero-bands {
+    display: block;
+    margin-top: 0;
+  }
+
+  .project__top {
+    display: block;
+    min-height: 0;
+  }
+
+  .project__hero-lower {
+    gap: 48px;
+    margin-top: clamp(28px, 8vh, 72px);
+  }
+
   .project__header {
-    padding-top: 20px;
+    padding-top: calc(20px + env(safe-area-inset-top, 0px));
+    padding-right: calc(var(--page-padding) + 52px);
     padding-bottom: 16px;
   }
 
@@ -1286,7 +1350,7 @@ img[data-cycle] {
 
   .project__intro {
     display: block;
-    margin-bottom: 24px;
+    margin-bottom: 0;
   }
 
   .project__intro-content {

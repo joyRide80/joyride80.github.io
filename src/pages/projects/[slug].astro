@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, render } from 'astro:content';
 import { compareProjectCollectionEntries } from '../../lib/projectYear';
 import { isVideoAssetPath } from '../../lib/media';
+import { withBasePublicPath } from '../../lib/withBasePublicPath';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
@@ -19,12 +20,20 @@ const projects = (await getCollection('projects')).sort(compareProjectCollection
 const currentIndex = projects.findIndex(p => p.id === project.id);
 const prevProject = currentIndex > 0 ? projects[currentIndex - 1] : projects[projects.length - 1];
 const nextProject = currentIndex < projects.length - 1 ? projects[currentIndex + 1] : projects[0];
-const { title, headline, subtitle, year, url, tags, category, heroImages, introduction } = project.data;
+const { title, headline, subtitle, year, url, tags, category, introduction } = project.data;
+const baseUrl = import.meta.env.BASE_URL;
+const heroImages =
+  project.data.heroImages?.map((img) => ({
+    ...img,
+    src: withBasePublicPath(img.src, baseUrl) ?? img.src,
+    cycleImages: img.cycleImages?.map(
+      (u) => withBasePublicPath(u, baseUrl) ?? u,
+    ),
+  })) ?? [];
 ---
 
 <BaseLayout title={`${headline} — joy·object`} description={subtitle}>
   <div class="project">
-    <!-- Header -->
     <header class="project__header">
       <a href={import.meta.env.BASE_URL} class="type-logo home__logo" style="text-decoration:none;color:var(--gray-900);">
         joy<span class="home__logo-dot"></span>object
@@ -45,58 +54,60 @@ const { title, headline, subtitle, year, url, tags, category, heroImages, introd
       </nav>
     </header>
 
-    <!-- Title -->
-    <div class="project__title-group">
-      <h1 class="project__title">{headline}</h1>
-      <p class="project__subtitle">{subtitle}</p>
-    </div>
-
-    <!-- Intro section -->
-    <div class="project__intro">
-      {introduction && (
-        <div class="project__intro-content">
-          <div class="type-tiny project__intro-label">Introduction</div>
-          <p class="project__intro-text">{introduction}</p>
-        </div>
-      )}
-      <div class="project__intro-meta">
-        <span class="project__meta-year">{year}</span>
-        {url && <span class="project__meta-url">{url}</span>}
-        <span class="project__meta-tags">{tags.join(' / ')}</span>
+    <div class="project__hero-bands">
+    <div class="project__top">
+      <div class="project__title-group">
+        <h1 class="project__title">{headline}</h1>
+        <p class="project__subtitle">{subtitle}</p>
       </div>
     </div>
+    </div>
 
-    <!-- Hero image collage -->
-    {heroImages && heroImages.length > 0 && (
-      <div class="project__collage">
-        {heroImages.map((img) => (
-          <div class={`project__collage-item project__collage-item--${img.size}`}>
-            <div class="project__collage-item-media">
-              {isVideoAssetPath(img.src) ? (
-                <video
-                  src={img.src}
-                  muted
-                  loop
-                  playsinline
-                  autoplay
-                  aria-label={img.caption || headline}
-                />
-              ) : (
-                <img
-                  src={img.src}
-                  alt={img.caption ? '' : headline}
-                  loading="lazy"
-                  data-cycle={img.cycleImages?.length ? JSON.stringify(img.cycleImages) : undefined}
-                />
+    <div class="project__hero-lower">
+      <div class="project__intro">
+        {introduction && (
+          <div class="project__intro-content">
+            <div class="type-tiny project__intro-label">Introduction</div>
+            <p class="project__intro-text">{introduction}</p>
+          </div>
+        )}
+        <div class="project__intro-meta">
+          <span class="project__meta-year">{year}</span>
+          {url && <span class="project__meta-url">{url}</span>}
+          <span class="project__meta-tags">{tags.join(' / ')}</span>
+        </div>
+      </div>
+      {heroImages && heroImages.length > 0 && (
+        <div class="project__collage">
+          {heroImages.map((img) => (
+            <div class={`project__collage-item project__collage-item--${img.size}`}>
+              <div class="project__collage-item-media">
+                {isVideoAssetPath(img.src) ? (
+                  <video
+                    src={img.src}
+                    muted
+                    loop
+                    playsinline
+                    autoplay
+                    aria-label={img.caption || headline}
+                  />
+                ) : (
+                  <img
+                    src={img.src}
+                    alt={img.caption ? '' : headline}
+                    loading="lazy"
+                    data-cycle={img.cycleImages?.length ? JSON.stringify(img.cycleImages) : undefined}
+                  />
+                )}
+              </div>
+              {img.caption && (
+                <p class="project__image-caption">{img.caption}</p>
               )}
             </div>
-            {img.caption && (
-              <p class="project__image-caption">{img.caption}</p>
-            )}
-          </div>
-        ))}
-      </div>
-    )}
+          ))}
+        </div>
+      )}
+    </div>
 
     <!-- Content -->
     <div class="project__content">
@@ -135,6 +146,13 @@ const { title, headline, subtitle, year, url, tags, category, heroImages, introd
   document.addEventListener("DOMContentLoaded", () => {
     // Prefix all images and videos for subpath compatibility
     const prefix = baseUrl.replace(/\/$/, "");
+    const normalizeAssetPath = (path) => {
+      if (!path) return path;
+      if (!prefix) return path;
+      if (path.startsWith(`${prefix}/`)) return path;
+      if (path.startsWith("/images/")) return prefix + path;
+      return path;
+    };
     if (prefix) {
       document.querySelectorAll('img, video, source').forEach(el => {
         const src = el.getAttribute('src');
@@ -154,9 +172,10 @@ const { title, headline, subtitle, year, url, tags, category, heroImages, introd
       } catch {
         pool = raw.split(",").map((s) => s.trim());
       }
+      pool = pool.map((src) => normalizeAssetPath(src)).filter(Boolean);
       if (!pool.length) return;
 
-      const originalSrc = img.getAttribute("src") || "";
+      const originalSrc = normalizeAssetPath(img.getAttribute("src") || "");
       if (!pool.includes(originalSrc)) pool.unshift(originalSrc);
 
       pool.forEach((src) => {
@@ -178,9 +197,10 @@ const { title, headline, subtitle, year, url, tags, category, heroImages, introd
 
 <style>
   .project__content {
-    grid-column: 1 / span 5;
     display: grid;
-    grid-template-columns: subgrid;
+    grid-template-columns: repeat(5, 1fr);
+    column-gap: 24px;
+    width: 100%;
   }
 
   .project__content :global(h2) {
@@ -226,6 +246,40 @@ const { title, headline, subtitle, year, url, tags, category, heroImages, introd
 
   .project__content :global(li) {
     margin-bottom: 8px;
+  }
+
+  .project__content :global(.project__content-collage) {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(var(--collage-cols, 2), minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 16px;
+    margin: 24px 0;
+    width: 100%;
+  }
+
+  .project__content :global(.project__content-collage figure) {
+    grid-column: auto;
+    margin: 0;
+  }
+
+  .project__content :global(.project__content-collage p) {
+    grid-column: auto;
+    margin: 0;
+  }
+
+  .project__content :global(.project__content-collage p > img) {
+    grid-column: auto;
+    margin: 0;
+    width: 100%;
+    border-radius: 4px;
+    display: block;
+  }
+
+  .project__content :global(.project__collage) {
+    grid-column: 1 / -1;
+    margin: 24px 0;
+    width: 100%;
   }
 
   .project__content :global(p > img) {
@@ -291,6 +345,11 @@ const { title, headline, subtitle, year, url, tags, category, heroImages, introd
   @media (max-width: 768px) {
     .project__content {
       display: block;
+    }
+
+    .project__content :global(.project__content-collage) {
+      grid-template-columns: 1fr;
+      margin: 16px 0;
     }
 
     .project__content :global(h2) {
