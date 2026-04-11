@@ -123,3 +123,14 @@ const baseUrl = import.meta.env.BASE_URL;
   </script>
   <script src="../scripts/cloud.js"></script>
 </BaseLayout>
+
+<style>
+  /* Hide page chrome until GSAP reveals it — prevents flash on slow connections */
+  :global(#site-logo),
+  :global(#main-nav),
+  :global(#home-bio),
+  :global(.home__switch),
+  :global(.global-contact) {
+    opacity: 0;
+  }
+</style>

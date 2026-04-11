@@ -5,7 +5,7 @@ import { withBasePublicPath } from "./src/lib/withBasePublicPath.js";
 import { remarkPrefixPublicImages } from "./src/lib/remarkPrefixPublicImages.mjs";
 import { remarkProjectContentCollage } from "./src/lib/remarkProjectContentCollage.mjs";
 
-const base = "/joyObjectSite/";
+const base = "/";
 
 function rehypePrefixBaseAssets() {
   /**
@@ -44,24 +44,6 @@ export default defineConfig({
     enabled: false,
   },
   integrations: [mdx()],
-  vite: {
-    plugins: [
-      {
-        name: "redirect-base-without-slash",
-        configureServer(server) {
-          server.middlewares.use((req, res, next) => {
-            if (req.originalUrl === "/joyObjectSite") {
-              res.statusCode = 301;
-              res.setHeader("Location", "/joyObjectSite/");
-              res.end();
-              return;
-            }
-            next();
-          });
-        },
-      },
-    ],
-  },
   markdown: {
     remarkPlugins: [
       remarkPrefixPublicImages(base),

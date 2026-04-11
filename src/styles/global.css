@@ -752,8 +752,7 @@ ol {
   position: absolute;
   border-radius: 4px;
   overflow: hidden;
-  opacity: 0.4;
-  transition: opacity 0.05s;
+  opacity: 0;
   cursor: pointer;
 }
 
