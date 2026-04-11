@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let dragStartX = 0;
   let canvasStartX = 0;
   let currentCanvasX = 0;
+  let introFinished = false;
 
   // ============================================================
   // Image cycle effect — preloading & state
@@ -83,6 +84,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const normalizedSrc = normalizeAssetPath(src);
     if (isVideoAssetPath(src)) {
       const v = document.createElement("video");
+      v.style.opacity = "0";
+      v.style.transition = "opacity 0.4s ease";
+      v.addEventListener("loadeddata", () => {
+        v.style.opacity = "1";
+        setTimeout(() => {
+          v.style.transition = "";
+        }, 400);
+      });
+      if (v.readyState >= 2) {
+        v.style.opacity = "1";
+        v.style.transition = "";
+      }
       v.src = normalizedSrc;
       v.muted = true;
       v.loop = true;
@@ -95,6 +108,19 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     const img = document.createElement("img");
+    img.style.opacity = "0";
+    img.style.transition = "opacity 0.4s ease";
+    img.onload = () => {
+      img.style.opacity = "1";
+      setTimeout(() => {
+        img.style.transition = "";
+      }, 400);
+    };
+    // Ensure already cached images also show up
+    if (img.complete) {
+      img.style.opacity = "1";
+      img.style.transition = "";
+    }
     img.src = normalizedSrc;
     img.alt = altText || "";
     img.loading = "lazy";
@@ -285,6 +311,11 @@ document.addEventListener("DOMContentLoaded", () => {
       el.style.width = `${item.w}px`;
       el.style.height = `${item.h}px`;
       el.style.zIndex = String(i);
+
+      if (introFinished) {
+        el.style.opacity = "0.4";
+        el.style.transform = "scale(1)";
+      }
 
       appendCoverMedia(el, item.src, item.project.title);
 
@@ -642,8 +673,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ============================================================
-  // Intro animation — typing slogan + page reveal
+  // Intro animation — page reveal
   // ============================================================
+
   const INTRO_KEY = "joy__intro_played";
   const isFirstVisit = !sessionStorage.getItem(INTRO_KEY);
 
@@ -656,11 +688,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const cloudItems = Array.from(document.querySelectorAll(".cloud__item"));
 
     const sloganEl = document.getElementById("slogan");
-    const sloganText = document.getElementById("slogan-text");
-    const parenLeft = sloganEl?.querySelector(".slogan__paren--left");
-    const parenRight = sloganEl?.querySelector(".slogan__paren--right");
+    const introSlogan = document.getElementById("intro-slogan");
+    const introSloganText = document.getElementById("intro-slogan-text");
 
-    gsap.set([logo, nav, bio, switchEl, contactEl].filter(Boolean), {
+    gsap.set([logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean), {
       opacity: 0,
     });
     gsap.set(cloudItems, {
@@ -675,85 +706,68 @@ document.addEventListener("DOMContentLoaded", () => {
     const group2 = shuffled.slice(third, third * 2);
     const group3 = shuffled.slice(third * 2);
 
-    const tl = gsap.timeline();
+    const tl = gsap.timeline({
+      paused: true,
+      onComplete: () => {
+        introFinished = true;
+      },
+    });
 
-    if (isFirstVisit && sloganEl && sloganText) {
+    if (isFirstVisit && introSlogan && introSloganText) {
       sessionStorage.setItem(INTRO_KEY, "1");
 
-      const SLOGAN = "DESIGNING WITH CODE,BUILDING WITH PURPOSE.";
+      gsap.set(introSlogan, { opacity: 1 });
 
-      // Hide parentheses off to each side
-      gsap.set(parenLeft, { autoAlpha: 0, x: -60 });
-      gsap.set(parenRight, { autoAlpha: 0, x: 60 });
-
-      // Enlarge text for dramatic intro
-      sloganText.textContent = SLOGAN;
-      gsap.set(sloganText, {
-        fontSize: 64,
-        lineHeight: "72px",
-        width: "auto",
-        maxWidth: "min(700px, 80vw)",
-        textTransform: "uppercase",
-      });
-
-      // Split into lines + chars for staggered reveal
-      const split = SplitText.create(sloganText, {
+      const split = SplitText.create(introSloganText, {
         type: "lines, chars",
         linesClass: "intro-line",
         charsClass: "intro-char",
       });
 
-      gsap.set(split.chars, { opacity: 0, y: 20 });
+      gsap.set(split.lines, { opacity: 0, y: 20 });
 
-      // Phase 1 — reveal chars with stagger
-      tl.to(split.chars, {
+      // Phase 1 - animate text in staggered by line
+      tl.to(split.lines, {
         opacity: 1,
         y: 0,
-        duration: 0.5,
-        stagger: 0.03,
+        duration: 0.8,
+        stagger: 0.15,
         ease: "power2.out",
       });
 
-      // Phase 2 — hold
-      tl.to({}, { duration: 0.6 });
-
-      // Phase 3 — revert split, then scale text down to Figma spec
-      const scaleLabel = "scaleDown";
-      tl.addLabel(scaleLabel);
-
-      tl.call(() => split.revert(), null, scaleLabel);
-
+      // Phase 2 - brief hold, then fade out text
       tl.to(
-        sloganText,
+        split.lines,
         {
-          fontSize: 14,
-          lineHeight: "16px",
-          width: 158,
-          maxWidth: "none",
-          duration: 0.8,
-          ease: "power3.inOut",
+          opacity: 0,
+          y: -20,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: "power2.inOut",
         },
-        scaleLabel,
+        "+=0.8",
       );
 
-      // Phase 4 — parentheses clamp in from sides
-      tl.to(
-        parenLeft,
-        { autoAlpha: 1, x: 0, duration: 0.5, ease: "power3.out" },
-        `${scaleLabel}+=0.4`,
-      );
-      tl.to(
-        parenRight,
-        { autoAlpha: 1, x: 0, duration: 0.5, ease: "power3.out" },
-        `${scaleLabel}+=0.4`,
-      );
+      // Phase 3 - fade out the overlay itself
+      tl.to(introSlogan, {
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.out",
+      });
 
-      // Phase 5 — reveal page chrome + cloud items (after scale + parens finish)
-      const revealLabel = `${scaleLabel}+=1.0`;
+      // Cleanup
+      tl.call(() => split.revert());
+
+      const revealLabel = "revealSite";
+      tl.addLabel(revealLabel);
 
       tl.to(
-        [logo, nav, bio, switchEl, contactEl].filter(Boolean),
-        { opacity: 1, duration: 0.5, ease: "power3.out" },
+        [logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean),
+        {
+          opacity: 1,
+          duration: 0.6,
+          ease: "power2.out",
+        },
         revealLabel,
       );
       tl.to(
@@ -761,39 +775,38 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           opacity: 0.4,
           scale: 1,
-          duration: 0.5,
-          ease: "power3.out",
+          duration: 0.6,
+          ease: "power2.out",
           stagger: 0.04,
         },
-        `${revealLabel}+=0.12`,
+        `${revealLabel}+=0.1`,
       );
       tl.to(
         group2,
         {
           opacity: 0.4,
           scale: 1,
-          duration: 0.5,
+          duration: 0.6,
           ease: "power2.out",
           stagger: 0.04,
         },
-        "-=0.35",
+        "-=0.45",
       );
       tl.to(
         group3,
         {
           opacity: 0.4,
           scale: 1,
-          duration: 0.5,
+          duration: 0.6,
           ease: "power2.out",
           stagger: 0.04,
         },
-        "-=0.3",
+        "-=0.4",
       );
     } else {
-      // Return visit — slogan already at final state, just reveal page
-      tl.to([logo, nav, bio, switchEl, contactEl].filter(Boolean), {
+      tl.to([logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean), {
         opacity: 1,
-        duration: 0.45,
+        duration: 0.6,
         ease: "power2.out",
       });
       tl.to(
@@ -801,35 +814,41 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           opacity: 0.4,
           scale: 1,
-          duration: 0.45,
+          duration: 0.6,
           ease: "power2.out",
           stagger: 0.04,
         },
-        "-=0.25",
+        "-=0.4",
       );
       tl.to(
         group2,
         {
           opacity: 0.4,
           scale: 1,
-          duration: 0.45,
+          duration: 0.6,
           ease: "power2.out",
           stagger: 0.04,
         },
-        "-=0.3",
+        "-=0.45",
       );
       tl.to(
         group3,
         {
           opacity: 0.4,
           scale: 1,
-          duration: 0.45,
+          duration: 0.6,
           ease: "power2.out",
           stagger: 0.04,
         },
-        "-=0.25",
+        "-=0.4",
       );
     }
+
+    // Wait for fonts to avoid layout bugs
+    document.fonts.ready.then(() => {
+      // Short delay to let browser paint
+      requestAnimationFrame(() => tl.play());
+    });
   }
 
   // ============================================================

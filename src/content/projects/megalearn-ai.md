@@ -11,7 +11,7 @@ tags:
   - "Front-end: Typescript, ThreeJS"
 category: "Edtech, AI"
 introduction: "Building a generative AI platform for education. Architected the design system and front-end using ThreeJS to create immersive 3D learning environments."
-order: 6
+order: 8
 thumbnail: "/images/projects/megalearn-ai/card.png"
 heroImages:
   - src: "/images/projects/megalearn-ai/desktop.png"

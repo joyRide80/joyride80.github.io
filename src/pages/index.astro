@@ -44,6 +44,11 @@ const baseUrl = import.meta.env.BASE_URL;
       </div>
     </div>
 
+    <!-- Intro Slogan Overlay -->
+    <div class="intro-slogan" id="intro-slogan" aria-hidden="true">
+      <p class="intro-slogan__text" id="intro-slogan-text">DESIGNING WITH CODE, BUILDING WITH PURPOSE.</p>
+    </div>
+
     <!-- Cloud View -->
     <div class="cloud" id="cloud-view">
       <div class="cloud__canvas" id="cloud-canvas">
@@ -128,7 +133,8 @@ const baseUrl = import.meta.env.BASE_URL;
   :global(#main-nav),
   :global(#home-bio),
   :global(.home__switch),
-  :global(.global-contact) {
+  :global(.global-contact),
+  :global(#slogan) {
     opacity: 0;
   }
 </style>
