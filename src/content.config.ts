@@ -21,15 +21,26 @@ const projectsCollection = defineCollection({
     timelineVideoPoster: z.string().optional(),
     heroImages: z
       .array(
-        z.object({
-          src: z.string(),
-          caption: z.string().optional(),
-          size: z.enum(["small", "medium", "large", "full"]),
-          /** Extra frames; project page script cycles the main `src` through these. */
-          cycleImages: z.array(z.string()).optional(),
-          /** Cycle through all non-video hero images plus the project thumbnail. */
-          cycleProjectPool: z.boolean().optional(),
-        }),
+        z
+          .object({
+            src: z.string().optional(),
+            caption: z.string().optional(),
+            size: z.enum(["small", "medium", "large", "full"]),
+            /** Extra frames; project page script cycles the main `src` through these. */
+            cycleImages: z.array(z.string()).optional(),
+            /** Cycle through all non-video hero images plus the project thumbnail. */
+            cycleProjectPool: z.boolean().optional(),
+            /** Vimeo / YouTube iframe `src` for a hero tile (use without `src` for embed-only). */
+            videoEmbed: z.string().optional(),
+            /** Use portrait (9:16) embed box; default is 16:9. */
+            embedVertical: z.boolean().optional().default(false),
+          })
+          .refine(
+            (d) => Boolean(d.src?.trim()) || Boolean(d.videoEmbed?.trim()),
+            {
+              message: "Each heroImages entry needs `src` and/or `videoEmbed`",
+            },
+          ),
       )
       .optional()
       .default([]),

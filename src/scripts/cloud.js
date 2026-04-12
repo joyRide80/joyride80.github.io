@@ -55,9 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function getProjectImagePool(project) {
     const pool = [];
     if (project.heroImages?.length) {
-      project.heroImages.forEach((img) =>
-        pool.push(normalizeAssetPath(img.src)),
-      );
+      project.heroImages.forEach((img) => {
+        if (img.src) pool.push(normalizeAssetPath(img.src));
+      });
     }
     const normalizedThumb = normalizeAssetPath(project.thumbnail);
     if (normalizedThumb && !pool.includes(normalizedThumb)) {

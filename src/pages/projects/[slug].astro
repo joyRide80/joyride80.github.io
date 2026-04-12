@@ -31,7 +31,7 @@ const baseUrl = import.meta.env.BASE_URL;
 const heroImages =
   project.data.heroImages?.map((img) => ({
     ...img,
-    src: withBasePublicPath(img.src, baseUrl) ?? img.src,
+    src: img.src ? (withBasePublicPath(img.src, baseUrl) ?? img.src) : undefined,
     cycleImages: img.cycleImages?.map(
       (u) => withBasePublicPath(u, baseUrl) ?? u,
     ),
@@ -40,7 +40,11 @@ const heroImages =
 /** All non-video hero sources + thumbnail (same idea as timeline image pool). */
 const projectImagePool: string[] = [];
 for (const h of heroImages) {
-  if (!isVideoAssetPath(h.src) && !projectImagePool.includes(h.src)) {
+  if (
+    h.src &&
+    !isVideoAssetPath(h.src) &&
+    !projectImagePool.includes(h.src)
+  ) {
     projectImagePool.push(h.src);
   }
 }
@@ -118,9 +122,9 @@ if (
         <div class="project__collage">
           {heroImages.map((img) => {
             let cyclePoolJson: string | undefined;
-            if (img.cycleProjectPool && projectImagePool.length >= 2) {
+            if (img.src && img.cycleProjectPool && projectImagePool.length >= 2) {
               cyclePoolJson = JSON.stringify(projectImagePool);
-            } else if (img.cycleImages?.length) {
+            } else if (img.src && img.cycleImages?.length) {
               const pool = [img.src, ...img.cycleImages].filter(
                 (u, i, a) => a.indexOf(u) === i,
               );
@@ -129,7 +133,8 @@ if (
             return (
             <div class={`project__collage-item project__collage-item--${img.size}`}>
               <div class="project__collage-item-media">
-                {isVideoAssetPath(img.src) ? (
+                {img.src &&
+                  (isVideoAssetPath(img.src) ? (
                   <video
                     src={img.src}
                     muted
@@ -145,6 +150,27 @@ if (
                     loading="lazy"
                     data-cycle={cyclePoolJson}
                   />
+                ))}
+                {img.videoEmbed && (
+                  <div
+                    class:list={[
+                      'project__collage-embed',
+                      'project__embed',
+                      { 'project__embed--vertical': img.embedVertical },
+                    ]}
+                  >
+                    <iframe
+                      src={img.videoEmbed}
+                      title={img.caption || headline}
+                      width={img.embedVertical ? 240 : 640}
+                      height={img.embedVertical ? 426 : 360}
+                      frameborder="0"
+                      allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                      referrerpolicy="strict-origin-when-cross-origin"
+                      loading="lazy"
+                      allowfullscreen
+                    />
+                  </div>
                 )}
               </div>
               {img.caption && (
@@ -165,12 +191,7 @@ if (
     <!-- Footer -->
     <div class="project__footer">
       <div class="project__footer-title">
-        <a href={import.meta.env.BASE_URL} style="text-decoration:none;">All projects</a> / <span
-          role="button"
-          tabindex="0"
-          data-open-contact-drawer
-          style="cursor:pointer;text-decoration:underline;text-decoration-thickness:0.5px;text-decoration-color:var(--gray-600);"
-          >Let's talk</span>
+        <a href={import.meta.env.BASE_URL} style="text-decoration:none;">All projects</a>
       </div>
       <nav class="nav-prevnext">
         <a href={`${import.meta.env.BASE_URL}projects/${prevProject.id}`} class="nav-prevnext__item">
@@ -286,6 +307,13 @@ if (
     margin-bottom: 16px;
   }
 
+  /* Same typography as hero `.project__intro-text` (markdown body) */
+  .project__content :global(p.project__intro-text) {
+    font-family: var(--font-display);
+    font-size: var(--project-fluid-intro);
+    line-height: var(--project-fluid-intro-lh);
+  }
+
   .project__content :global(ul),
   .project__content :global(ol) {
     grid-column: 1 / span 1;
@@ -306,11 +334,22 @@ if (
     grid-column: 1 / span 2;
   }
 
+  .project__content :global(.text-wide + .text-wide) {
+    margin-top: 24px;
+  }
+
   .project__content :global(.text-wide p) {
     font-family: var(--font-body);
     font-size: var(--project-fluid-body);
     line-height: var(--project-fluid-body-lh);
     margin-bottom: 16px;
+  }
+
+  /* Higher specificity than `.text-wide p` (must follow that rule) */
+  .project__content :global(.text-wide p.project__intro-text) {
+    font-family: var(--font-display);
+    font-size: var(--project-fluid-intro);
+    line-height: var(--project-fluid-intro-lh);
   }
 
   .project__content :global(.text-wide h3) {
@@ -390,6 +429,10 @@ if (
     gap: 8px;
     min-width: 0;
     overflow: visible;
+  }
+
+  .project__content :global(figure.project__figure--full) {
+    grid-column: 1 / -1;
   }
 
   .project__content :global(figure img) {

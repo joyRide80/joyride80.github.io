@@ -62,23 +62,23 @@ timelineImage: -1
 
   <div class="text-pair-row__col">
 
-- Transaction Page: Users can view and edit imported invoices, along with calculated emissions and categories.
-- Emission Page: This page displays emission values by category, providing users with data to inform their decisions on reducing emissions.
-- Overview: A dashboard-style page showing the grand total emissions for all categories.
+- Transactions Page: Users can view and edit imported invoices, along with calculated emissions and categories.
+- Emissions Page: This page displays emission values by category, providing users with data to inform their decisions on reducing emissions.
+- Overview: A dashboard-style page showing the total emissions for all categories.
 
   </div>
 </div>
 
-![Transaction page|span:2|col:1](/images/projects/klara/transaction-page.png)
+![Transactions page|span:2|col:1](/images/projects/klara/transaction-page.png)
 
-![Emission page|span:1|col:3](/images/projects/klara/emission-page.png)
+![Emissions page|span:1|col:3](/images/projects/klara/emission-page.png)
 
 ![Overview page|span:1|col:4](/images/projects/klara/overview-page.png)
 
 ### User Testing and Iteration
 
 <div class="text-wide">
- We conducted user testing with a hi-fidelity prototype to ensure users understood the workflow without needing a tutorial. The results showed that we needed to add guidance for first-time users, which we incorporated into the design.
+ We conducted user testing with a high-fidelity prototype to ensure users understood the workflow without needing a tutorial. The results showed that we needed to add guidance for first-time users, which we incorporated into the design.
 </div>
 
 ### Prioritizing Accuracy and Transparency
