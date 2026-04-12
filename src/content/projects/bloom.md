@@ -1,6 +1,6 @@
 ---
-title: "Digital Science Teacher"
-headline: "Digital Science Teacher"
+title: "Bloom"
+headline: "Bloom: Educational iPad App for kids"
 subtitle: "An App That Guides You Through Mini Interactive Lessons Around Science and Technology"
 year: "2016"
 url: ""

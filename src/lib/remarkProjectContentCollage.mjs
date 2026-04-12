@@ -1,7 +1,21 @@
+import { withBasePublicPath } from "./withBasePublicPath.js";
+
 /**
- * Wrap runs of consecutive markdown image paragraphs in a full-width grid container.
- * Uses remark (not rehype) so content-collection pre-render picks it up — the glob loader
- * snapshots rendered HTML before page Vite plugins run.
+ * Remark plugin for the 4-column project page grid.
+ *
+ * Images can carry placement metadata in their alt text:
+ *   ![alt text|span:2|col:3](/path/to/image.png)
+ *   ![alt|cycle:/a.png,/b.png](/main.png)
+ *
+ * - span:N  → grid-column span (1–4, default 2)
+ * - col:N   → grid-column start (1–4, default 1)
+ * - cycle:  → comma-separated URLs/paths; emits data-cycle for always-on page script
+ *
+ * The plugin strips the metadata from the rendered alt attribute and emits a
+ * <figure> with an inline `grid-column` style so the image lands on the
+ * correct cell of the parent 4-column CSS grid (.project__content).
+ *
+ * Images without metadata keep the default CSS placement (span 2 at col 1).
  */
 
 /** @param {string} s */
@@ -10,6 +24,98 @@ function escapeAttr(s) {
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
     .replace(/</g, "&lt;");
+}
+
+/**
+ * Parse "|span:N" and "|col:N" tokens from an image alt string.
+ * Returns the clean alt text plus parsed values (null when absent).
+ */
+/** Strip optional leading "visible " (authors sometimes confuse with a caption toggle). */
+function stripVisiblePrefix(s) {
+  const t = (s || "").trim();
+  const without = t.replace(/^\s*visible\s+/i, "").trim();
+  return without.length > 0 ? without : t;
+}
+
+function parseImageMeta(altText, baseWithSlash) {
+  const cycleMatch = altText.match(/\|cycle:([^|]+)/);
+  const cyclePathsRaw = cycleMatch
+    ? cycleMatch[1]
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
+  let rest = altText.replace(/\|cycle:[^|]+/g, "");
+  const spanMatch = rest.match(/\|span:(\d+)/);
+  const colMatch = rest.match(/\|col:(\d+)/);
+  const cleanAlt = rest
+    .replace(/\|span:\d+/g, "")
+    .replace(/\|col:\d+/g, "")
+    .trim();
+
+  const cyclePaths = cyclePathsRaw.map(
+    (p) => withBasePublicPath(p, baseWithSlash) ?? p,
+  );
+
+  return {
+    alt: cleanAlt,
+    span: spanMatch
+      ? Math.min(Math.max(parseInt(spanMatch[1], 10), 1), 4)
+      : null,
+    col: colMatch ? Math.min(Math.max(parseInt(colMatch[1], 10), 1), 4) : null,
+    cyclePaths,
+  };
+}
+
+/** @param {import('mdast').Image} img */
+function hasPlacementMeta(img) {
+  const raw = img.alt || "";
+  return (
+    /\|span:\d+/.test(raw) || /\|col:\d+/.test(raw) || /\|cycle:/.test(raw)
+  );
+}
+
+/**
+ * Build a <figure> HTML node with inline grid-column for one image.
+ * Visible caption: non-empty alt (after stripping |span|/|col|) is rendered as <figcaption>.
+ * The img keeps the same string as alt for assistive tech (avoids empty-alt edge cases).
+ * @param {import('mdast').Image} img
+ */
+function buildGridFigure(img, baseWithSlash) {
+  const { alt, span, col, cyclePaths } = parseImageMeta(
+    img.alt || "",
+    baseWithSlash,
+  );
+  const mainUrl = img.url || "";
+  const prefixedUrl = withBasePublicPath(mainUrl, baseWithSlash) ?? mainUrl;
+  const src = escapeAttr(prefixedUrl);
+  const captionText = stripVisiblePrefix(alt);
+  const cleanAlt = escapeAttr(captionText);
+  const figcaption =
+    captionText.length > 0
+      ? `<figcaption>${escapeAttr(captionText)}</figcaption>`
+      : "";
+
+  const gridCol = col ?? 1;
+  const gridSpan = span ?? 2;
+
+  const mainPrefixed = withBasePublicPath(mainUrl, baseWithSlash) ?? mainUrl;
+  let pool = cyclePaths.length ? [...cyclePaths] : [];
+  if (pool.length && mainPrefixed && !pool.includes(mainPrefixed)) {
+    pool = [mainPrefixed, ...pool];
+  }
+  const cycleAttr =
+    pool.length >= 2 ? ` data-cycle="${escapeAttr(JSON.stringify(pool))}"` : "";
+
+  return {
+    type: "html",
+    value:
+      `<figure style="grid-column:${gridCol}/span ${gridSpan}">` +
+      `<img src="${src}" alt="${cleanAlt}" loading="lazy"${cycleAttr} />` +
+      figcaption +
+      `</figure>`,
+  };
 }
 
 /** @param {import('mdast').Paragraph} node */
@@ -23,86 +129,73 @@ function isParagraphLoneImage(node) {
   return meaningful.length === 1 && meaningful[0].type === "image";
 }
 
-/** @param {number} n */
-function collageColsForCount(n) {
-  if (n <= 1) return 1;
-  if (n === 2) return 2;
-  if (n === 3) return 3;
-  return 2;
-}
-
 /**
- * @param {import('mdast').RootContent[]} children
- * @param {number} i
+ * A paragraph containing only images (and optional whitespace).
+ * @param {import('mdast').Paragraph} node
+ * @returns {import('mdast').Image[] | null}
  */
-function collectConsecutiveImageParagraphs(children, i) {
-  /** @type {import('mdast').Paragraph[]} */
-  const group = [];
-  let j = i;
-  while (j < children.length) {
-    const n = children[j];
-    if (n.type === "paragraph" && isParagraphLoneImage(n)) {
-      group.push(n);
-      j++;
+function paragraphOnlyImages(node) {
+  if (node.type !== "paragraph") return null;
+  /** @type {import('mdast').Image[]} */
+  const imgs = [];
+  for (const c of node.children ?? []) {
+    if (c.type === "image") imgs.push(c);
+    else if (c.type === "text") {
+      if (c.value.trim() !== "") return null;
+    } else if (c.type === "break") {
+      // Two `![…](…)` lines without a blank line → one paragraph, often image + break + image
       continue;
+    } else {
+      return null;
     }
-    break;
   }
-  return { group, next: j };
+  return imgs.length >= 2 ? imgs : null;
 }
 
-/**
- * @param {import('mdast').Paragraph[]} group
- */
-function buildCollageHtmlNode(group) {
-  const cols = collageColsForCount(group.length);
-  const inner = group
-    .map((p) => {
-      const img = p.children.find((c) => c.type === "image");
-      if (!img || img.type !== "image") return "";
-      const src = escapeAttr(img.url || "");
-      const alt = escapeAttr(img.alt || "");
-      return `<p><img src="${src}" alt="${alt}" loading="lazy"></p>`;
-    })
-    .join("");
-  return {
-    type: "html",
-    value: `<div class="project__content-collage" style="--collage-cols:${cols}">${inner}</div>`,
-  };
-}
+/** @param {{ baseWithSlash?: string }} [options] — same attacher shape as `remarkPrefixPublicImages`. */
+export function remarkProjectContentCollage(options = {}) {
+  const baseWithSlash = options.baseWithSlash ?? "/";
+  return () => {
+    /** @param {import('mdast').Root} tree */
+    return (tree) => {
+      if (!tree?.children?.length) return;
 
-export function remarkProjectContentCollage() {
-  /**
-   * @param {import('mdast').Root} tree
-   */
-  return (tree) => {
-    if (!tree.children?.length) return;
+      /** @type {import('mdast').RootContent[]} */
+      const next = [];
+      const { children } = tree;
 
-    /** @type {import('mdast').RootContent[]} */
-    const next = [];
-    let i = 0;
-    const { children } = tree;
+      for (let i = 0; i < children.length; i++) {
+        const node = children[i];
 
-    while (i < children.length) {
-      const node = children[i];
-      if (node.type === "paragraph" && isParagraphLoneImage(node)) {
-        const { group, next: end } = collectConsecutiveImageParagraphs(
-          children,
-          i,
-        );
-        if (group.length >= 2) {
-          next.push(buildCollageHtmlNode(group));
-          i = end;
-        } else {
+        if (node.type !== "paragraph") {
           next.push(node);
-          i = end;
+          continue;
         }
-      } else {
-        next.push(node);
-        i++;
-      }
-    }
 
-    tree.children = next;
+        const inlineImages = paragraphOnlyImages(node);
+        if (inlineImages) {
+          for (const img of inlineImages) {
+            next.push(buildGridFigure(img, baseWithSlash));
+          }
+          continue;
+        }
+
+        if (isParagraphLoneImage(node)) {
+          const img = node.children.find((c) => c.type === "image");
+          if (img && hasPlacementMeta(img)) {
+            next.push(buildGridFigure(img, baseWithSlash));
+          } else if (img) {
+            next.push(buildGridFigure(img, baseWithSlash));
+          } else {
+            next.push(node);
+          }
+          continue;
+        }
+
+        next.push(node);
+      }
+
+      tree.children = next;
+    };
   };
 }

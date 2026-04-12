@@ -24,8 +24,11 @@ const projectsCollection = defineCollection({
         z.object({
           src: z.string(),
           caption: z.string().optional(),
-          size: z.enum(["small", "medium", "large"]),
+          size: z.enum(["small", "medium", "large", "full"]),
+          /** Extra frames; project page script cycles the main `src` through these. */
           cycleImages: z.array(z.string()).optional(),
+          /** Cycle through all non-video hero images plus the project thumbnail. */
+          cycleProjectPool: z.boolean().optional(),
         }),
       )
       .optional()

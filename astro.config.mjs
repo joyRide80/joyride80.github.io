@@ -47,7 +47,7 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [
       remarkPrefixPublicImages(base),
-      remarkProjectContentCollage,
+      remarkProjectContentCollage({ baseWithSlash: base }),
     ],
     rehypePlugins: [rehypePrefixBaseAssets],
     shikiConfig: {

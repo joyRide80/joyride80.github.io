@@ -11,7 +11,7 @@ tags:
   - "UI design"
 category: "Edtech"
 introduction: "Being played by 1 billion people annually, Kahoot! is known for multiple choice or close-ended questions. Players can only pick pre-defined answers from their smartphones when playing these games. It's that simple, quick, fun, and engaging. The challenge came when our primary target users, the teachers, requested a new game type, Open-ended question. This question type allows them to test deeper knowledge of a topic and see how well their students recall content without any cues."
-order: 2
+order: 5
 thumbnail: "/images/projects/kahoot/thumbnail.png"
 heroImages:
   - src: "/images/projects/kahoot/kahootLogo.png"

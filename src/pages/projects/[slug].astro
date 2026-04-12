@@ -4,6 +4,7 @@ import { getCollection, render } from 'astro:content';
 import { compareProjectCollectionEntries } from '../../lib/projectYear';
 import { isVideoAssetPath } from '../../lib/media';
 import { withBasePublicPath } from '../../lib/withBasePublicPath';
+import { normalizeProjectCategory } from '../../lib/normalizeProjectCategory';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
@@ -21,6 +22,11 @@ const currentIndex = projects.findIndex(p => p.id === project.id);
 const prevProject = currentIndex > 0 ? projects[currentIndex - 1] : projects[projects.length - 1];
 const nextProject = currentIndex < projects.length - 1 ? projects[currentIndex + 1] : projects[0];
 const { title, headline, subtitle, year, url, tags, category, introduction } = project.data;
+const displayCategory = normalizeProjectCategory(category);
+const urlTrimmed = url?.trim() ?? '';
+const urlHref =
+  urlTrimmed &&
+  (/^https?:\/\//i.test(urlTrimmed) ? urlTrimmed : `https://${urlTrimmed.replace(/^\/+/, '')}`);
 const baseUrl = import.meta.env.BASE_URL;
 const heroImages =
   project.data.heroImages?.map((img) => ({
@@ -30,6 +36,23 @@ const heroImages =
       (u) => withBasePublicPath(u, baseUrl) ?? u,
     ),
   })) ?? [];
+
+/** All non-video hero sources + thumbnail (same idea as timeline image pool). */
+const projectImagePool: string[] = [];
+for (const h of heroImages) {
+  if (!isVideoAssetPath(h.src) && !projectImagePool.includes(h.src)) {
+    projectImagePool.push(h.src);
+  }
+}
+const thumbPrefixed =
+  withBasePublicPath(project.data.thumbnail, baseUrl) ?? project.data.thumbnail;
+if (
+  thumbPrefixed &&
+  !isVideoAssetPath(thumbPrefixed) &&
+  !projectImagePool.includes(thumbPrefixed)
+) {
+  projectImagePool.push(thumbPrefixed);
+}
 ---
 
 <BaseLayout title={`${headline} — joy·object`} description={subtitle}>
@@ -67,19 +90,43 @@ const heroImages =
       <div class="project__intro">
         {introduction && (
           <div class="project__intro-content">
-            <div class="type-tiny project__intro-label">Introduction</div>
             <p class="project__intro-text">{introduction}</p>
           </div>
         )}
         <div class="project__intro-meta">
-          <span class="project__meta-year">{year}</span>
-          {url && <span class="project__meta-url">{url}</span>}
-          <span class="project__meta-tags">{tags.join(' / ')}</span>
+          <div class="project__intro-meta-block project__intro-meta-block--primary">
+            <p class="project__meta-year">{year}</p>
+            {urlHref && (
+              <p class="project__meta-url-line">
+                <a class="project__meta-url-link" href={urlHref} rel="noopener noreferrer" target="_blank">
+                  {urlTrimmed}
+                </a>
+              </p>
+            )}
+          </div>
+          <div class="project__intro-meta-block">
+            <div class="type-tiny project__intro-meta-label">Industry</div>
+            <p class="project__meta-category">{displayCategory}</p>
+          </div>
+          <div class="project__intro-meta-block">
+            <div class="type-tiny project__intro-meta-label">What I did</div>
+            <p class="type-tiny project__meta-roles">{tags.join(' / ')}</p>
+          </div>
         </div>
       </div>
       {heroImages && heroImages.length > 0 && (
         <div class="project__collage">
-          {heroImages.map((img) => (
+          {heroImages.map((img) => {
+            let cyclePoolJson: string | undefined;
+            if (img.cycleProjectPool && projectImagePool.length >= 2) {
+              cyclePoolJson = JSON.stringify(projectImagePool);
+            } else if (img.cycleImages?.length) {
+              const pool = [img.src, ...img.cycleImages].filter(
+                (u, i, a) => a.indexOf(u) === i,
+              );
+              if (pool.length >= 2) cyclePoolJson = JSON.stringify(pool);
+            }
+            return (
             <div class={`project__collage-item project__collage-item--${img.size}`}>
               <div class="project__collage-item-media">
                 {isVideoAssetPath(img.src) ? (
@@ -96,7 +143,7 @@ const heroImages =
                     src={img.src}
                     alt={img.caption ? '' : headline}
                     loading="lazy"
-                    data-cycle={img.cycleImages?.length ? JSON.stringify(img.cycleImages) : undefined}
+                    data-cycle={cyclePoolJson}
                   />
                 )}
               </div>
@@ -104,7 +151,8 @@ const heroImages =
                 <p class="project__image-caption">{img.caption}</p>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -162,7 +210,7 @@ const heroImages =
       });
     }
 
-    const CYCLE_INTERVAL = 320;
+    const CYCLE_MS = 280;
 
     document.querySelectorAll("[data-cycle]").forEach((img) => {
       const raw = img.dataset.cycle || "";
@@ -177,68 +225,73 @@ const heroImages =
 
       const originalSrc = normalizeAssetPath(img.getAttribute("src") || "");
       if (!pool.includes(originalSrc)) pool.unshift(originalSrc);
+      if (pool.length < 2) return;
 
       pool.forEach((src) => {
         const preload = new Image();
         preload.src = src;
       });
 
-      let idx = 0;
+      const wrap = img.closest(".project__collage-item-media, figure") || img;
+      let idx = pool.indexOf(originalSrc);
+      if (idx === -1) idx = 0;
+
       setInterval(() => {
         idx = (idx + 1) % pool.length;
         img.src = pool[idx];
-      }, CYCLE_INTERVAL);
+      }, CYCLE_MS);
 
-      img.closest(".project__collage-item-media, figure, p")
-        ?.classList.add("is-auto-cycling");
+      wrap.classList.add("is-auto-cycling");
     });
   });
 </script>
 
 <style>
+  /* ── 4-column content grid ── */
   .project__content {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     column-gap: 24px;
     width: 100%;
   }
 
+  /* Text defaults: 1-column width at column 1 */
   .project__content :global(h2) {
-    grid-column: 1 / span 2;
+    grid-column: 1 / span 1;
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: var(--project-fluid-label);
     font-weight: 400;
-    line-height: 25px;
+    line-height: var(--project-fluid-label-lh);
     letter-spacing: 0.4px;
     text-transform: uppercase;
-    margin-top: 48px;
+    margin-top: clamp(32px, 4vw + 18px, 48px);
     margin-bottom: 12px;
   }
 
   .project__content :global(h3) {
-    grid-column: 1 / span 2;
+    grid-column: 1 / span 1;
     font-family: var(--font-display);
-    font-size: 25px;
+    font-size: var(--project-fluid-h3);
     font-weight: 400;
-    line-height: 32px;
-    margin-top: 32px;
+    line-height: var(--project-fluid-display-lh);
+    margin-top: clamp(24px, 2.5vw + 14px, 32px);
     margin-bottom: 12px;
   }
 
   .project__content :global(p) {
-    grid-column: 1 / span 2;
+    grid-column: 1 / span 1;
     font-family: var(--font-body);
-    font-size: 21px;
-    line-height: 32px;
+    font-size: var(--project-fluid-body);
+    line-height: var(--project-fluid-body-lh);
     margin-bottom: 16px;
   }
 
   .project__content :global(ul),
   .project__content :global(ol) {
-    grid-column: 1 / span 2;
+    grid-column: 1 / span 1;
     font-family: var(--font-body);
-    font-size: 21px;
-    line-height: 32px;
+    font-size: var(--project-fluid-body);
+    line-height: var(--project-fluid-body-lh);
     margin-bottom: 16px;
     padding-left: 20px;
     list-style: disc;
@@ -248,6 +301,125 @@ const heroImages =
     margin-bottom: 8px;
   }
 
+  /* 2-column text wrapper: <div class="text-wide">…</div> */
+  .project__content :global(.text-wide) {
+    grid-column: 1 / span 2;
+  }
+
+  .project__content :global(.text-wide p) {
+    font-family: var(--font-body);
+    font-size: var(--project-fluid-body);
+    line-height: var(--project-fluid-body-lh);
+    margin-bottom: 16px;
+  }
+
+  .project__content :global(.text-wide h3) {
+    font-family: var(--font-display);
+    font-size: var(--project-fluid-h3);
+    font-weight: 400;
+    line-height: var(--project-fluid-display-lh);
+    margin-top: clamp(24px, 2.5vw + 14px, 32px);
+    margin-bottom: 12px;
+  }
+
+  .project__content :global(.text-wide ul),
+  .project__content :global(.text-wide ol) {
+    font-family: var(--font-body);
+    font-size: var(--project-fluid-body);
+    line-height: var(--project-fluid-body-lh);
+    margin-bottom: 16px;
+    padding-left: 20px;
+    list-style: disc;
+  }
+
+  /*
+   * Two 1-column text blocks on one row (cols 1 & 2 of the page grid).
+   * Wrapper spans 2 columns; inner columns split that row with the same gutter as the grid.
+   */
+  .project__content :global(.text-pair-row) {
+    grid-column: 1 / span 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 24px;
+    align-items: start;
+  }
+
+  .project__content :global(.text-pair-row__col > *:first-child) {
+    margin-top: 0;
+  }
+
+  .project__content :global(.text-pair-row__col p) {
+    font-family: var(--font-body);
+    font-size: var(--project-fluid-body);
+    line-height: var(--project-fluid-body-lh);
+    margin-bottom: 16px;
+  }
+
+  .project__content :global(.text-pair-row__col ul),
+  .project__content :global(.text-pair-row__col ol) {
+    font-family: var(--font-body);
+    font-size: var(--project-fluid-body);
+    line-height: var(--project-fluid-body-lh);
+    margin-bottom: 16px;
+    padding-left: 20px;
+    list-style: disc;
+  }
+
+  /*
+   * Forces a new row in the 4-col grid so the next item (e.g. col:3 image)
+   * does not sit on the same row as a short .text-pair-row that only spans cols 1–2.
+   */
+  .project__content :global(.project__content-row-break) {
+    grid-column: 1 / -1;
+    min-height: 1px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* ── Images & figures ── */
+
+  .project__content :global(figure) {
+    grid-column: 1 / span 2;
+    margin: 24px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .project__content :global(figure img) {
+    width: 100%;
+    border-radius: 4px;
+    margin: 0;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .project__content :global(figcaption) {
+    font-family: var(--font-mono);
+    font-size: var(--project-fluid-label);
+    line-height: var(--project-fluid-label-lh);
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin-top: 0;
+    flex: 0 0 auto;
+    width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .project__content :global(p > img) {
+    width: 100%;
+    border-radius: 4px;
+    margin: 24px 0;
+  }
+
+  /* Legacy collage wrapper (manually written HTML in markdown) */
   .project__content :global(.project__content-collage) {
     grid-column: 1 / -1;
     display: grid;
@@ -282,34 +454,7 @@ const heroImages =
     width: 100%;
   }
 
-  .project__content :global(p > img) {
-    grid-column: 1 / span 2;
-    width: 100%;
-    border-radius: 4px;
-    margin: 24px 0;
-  }
-
-  .project__content :global(figure) {
-    grid-column: 1 / span 2;
-    margin: 24px 0;
-  }
-
-  .project__content :global(figure img) {
-    width: 100%;
-    border-radius: 4px;
-    margin: 0;
-    display: block;
-  }
-
-  .project__content :global(figcaption) {
-    font-family: var(--font-mono);
-    font-size: 14px;
-    line-height: 25px;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-    color: var(--gray-600);
-    margin-top: 8px;
-  }
+  /* ── Embeds ── */
 
   .project__content :global(.project__embed) {
     grid-column: 1 / span 2;
@@ -342,6 +487,40 @@ const heroImages =
     border: none;
   }
 
+  /* ── Tablet: 4-col → 2-col ── */
+  @media (max-width: 1024px) {
+    .project__content {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .project__content :global(h2),
+    .project__content :global(h3),
+    .project__content :global(p),
+    .project__content :global(ul),
+    .project__content :global(ol) {
+      grid-column: 1 / span 1;
+    }
+
+    .project__content :global(.text-wide) {
+      grid-column: 1 / -1;
+    }
+
+    .project__content :global(.text-pair-row) {
+      grid-column: 1 / -1;
+      grid-template-columns: 1fr;
+      row-gap: 16px;
+    }
+
+    .project__content :global(figure) {
+      grid-column: 1 / -1 !important;
+    }
+
+    .project__content :global(.project__embed) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* ── Mobile: single column (block) ── */
   @media (max-width: 768px) {
     .project__content {
       display: block;
@@ -352,11 +531,20 @@ const heroImages =
       margin: 16px 0;
     }
 
+    .project__content :global(.text-pair-row) {
+      display: block;
+    }
+
+    .project__content :global(.project__content-row-break) {
+      display: none;
+    }
+
     .project__content :global(h2) {
       margin-top: 32px;
     }
 
     .project__content :global(figure) {
+      grid-column: unset !important;
       margin: 16px 0;
     }
 

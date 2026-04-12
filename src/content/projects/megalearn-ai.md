@@ -32,6 +32,4 @@ Although much good educational contents are available in many apps, they are rel
     <figcaption>The hand-drawn sketch explores how to visualize the formation of planet earth</figcaption>
 </figure>
 
-## Header
 
-We continued working on the card interface with various science subjects, and later on, we realized that when adding questions on cards, we tend to add more informative content. All the visible areas on the cards mostly belonged to the teacher, not the learners. While using a chat interface, the learner's content is more visible. They can tell the digital teacher if they get lost. The communication is more mutual and natural.

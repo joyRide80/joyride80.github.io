@@ -11,8 +11,8 @@ tags:
   - "Visual design"
   - "UI design"
 category: "SaaS"
-introduction: "Beagle is an online proposal writing tool designed and crafted specifically for digital agencies. Beagle provides a way to create, share, revise and send beautiful proposals easily. We built Beagle by using Podio API. Currently, the project has been discontinued. However, you can see some ideas and sketches at the provided links."
-order: 4
+introduction: "Beagle is an online proposal writing tool designed and crafted specifically for digital agencies. Beagle provides a way to create, share, revise and send beautiful proposals easily."
+order: 2
 thumbnail: "/images/projects/beagle/sculpture.jpg"
 heroImages:
   - src: "/images/projects/beagle/logo-sketch.png"
