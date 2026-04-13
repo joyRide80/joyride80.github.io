@@ -180,12 +180,7 @@ Min heights: large 333px, small 153px, full 380px.
 
 #### Markdown body content (`project__content`)
 
-**Text** — always starts at column 1:
-
-- Default (p, h2, h3, ul, ol): **1 column** wide
-- Wrapped in `<div class="text-wide">…</div>`: **2 columns** wide
-- Two default-width columns on one row: `<div class="text-pair-row">` with two `<div class="text-pair-row__col">` children (spans grid cols 1–2; inner split 50/50). See `README.md`.
-- New grid row before the next item: `<div class="project__content-row-break" aria-hidden="true"></div>` (e.g. so a `col:3` image is not on the same row as `text-pair-row`). See `README.md`.
+**Text** — headings (`##`, `###`) are placed in the first column and take 1 column width. Paragraphs, lists, and quotes automatically start in the 2nd column and span 2 columns width. They automatically align on the same row, so you don't need any layout wrappers.
 
 **Images** — placement via alt-text metadata:
 
@@ -249,12 +244,13 @@ A 4-col image always starts at column 1. Examples:
 
 ## Responsive Breakpoints
 
-| Breakpoint | Width       | Changes                                                               |
-| ---------- | ----------- | --------------------------------------------------------------------- |
-| Mobile     | ≤ 768px     | Cloud → simple grid, single column project layout, stacked about page |
-| Tablet     | 769–1024px  | Reduced cloud density, 2-column project images                        |
-| Desktop    | 1025–1280px | Design target — follow Figma exactly                                  |
-| Large      | ≥ 1440px    | More whitespace, same proportions                                     |
+| Breakpoint | Width       | Changes                                                                                    |
+| ---------- | ----------- | ------------------------------------------------------------------------------------------ |
+| Mobile     | ≤ 768px     | Cloud → simple grid, single column project layout, stacked about page                      |
+| Tablet     | 769–1024px  | Reduced cloud density, 2-column project images                                             |
+| Desktop    | 1025–1399px | Design target — follow Figma exactly                                                       |
+| XXL        | ≥ 1400px    | Scaled-up typography, wider gutters (32px), larger cloud/timeline items, more page padding |
+| Large      | ≥ 1536px    | Even more whitespace, same proportions                                                     |
 
 ---
 

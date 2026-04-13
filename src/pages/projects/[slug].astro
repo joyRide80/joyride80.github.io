@@ -279,14 +279,18 @@ if (
   /* Text defaults: 1-column width at column 1 */
   .project__content :global(h2) {
     grid-column: 1 / span 1;
-    font-family: var(--font-mono);
-    font-size: var(--project-fluid-label);
+    font-family: var(--font-display);
+    font-size: var(--project-fluid-h2);
     font-weight: 400;
-    line-height: var(--project-fluid-label-lh);
+    line-height: var(--project-fluid-intro-lh);
     letter-spacing: 0.4px;
     text-transform: uppercase;
+    color: var(--gray-900);
     margin-top: clamp(32px, 4vw + 18px, 48px);
     margin-bottom: 12px;
+  }
+  .project__content :global(h2 + *) {
+    margin-top: clamp(32px, 4vw + 18px, 48px);
   }
 
   .project__content :global(h3) {
@@ -294,32 +298,67 @@ if (
     font-family: var(--font-display);
     font-size: var(--project-fluid-h3);
     font-weight: 400;
-    line-height: var(--project-fluid-display-lh);
+    line-height: var(--project-fluid-intro-lh);
+    color: var(--gray-900);
+    letter-spacing: 0;
+    text-transform: none;
     margin-top: clamp(24px, 2.5vw + 14px, 32px);
     margin-bottom: 12px;
   }
+  .project__content :global(h3 + *) {
+    margin-top: clamp(24px, 2.5vw + 14px, 32px);
+  }
 
   .project__content :global(p) {
-    grid-column: 1 / span 1;
+    grid-column: 2 / span 2;
     font-family: var(--font-body);
     font-size: var(--project-fluid-body);
-    line-height: var(--project-fluid-body-lh);
+    line-height: var(--project-fluid-intro-lh);
     margin-bottom: 16px;
   }
 
-  /* Same typography as hero `.project__intro-text` (markdown body) */
+  /* Same scale as hero `.project__intro-text`; Source Serif 4 (body stack) */
   .project__content :global(p.project__intro-text) {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: var(--project-fluid-intro);
     line-height: var(--project-fluid-intro-lh);
   }
 
+  /* Markdown blockquote (>) — pull quote: Pantasia, centred, intro scale */
+  .project__content :global(blockquote) {
+    grid-column: 2 / span 2;
+    margin: clamp(24px, 3vw, 40px) 0;
+    padding: 0;
+    border: none;
+    font-family: var(--font-display);
+    font-size: var(--project-fluid-intro);
+    line-height: var(--project-fluid-intro-lh);
+    font-style: normal;
+    font-weight: 400;
+    text-align: center;
+    color: var(--gray-900);
+  }
+
+  .project__content :global(blockquote p) {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    font-style: inherit;
+    font-weight: inherit;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .project__content :global(blockquote p:last-child) {
+    margin-bottom: 0;
+  }
+
   .project__content :global(ul),
   .project__content :global(ol) {
-    grid-column: 1 / span 1;
+    grid-column: 2 / span 2;
     font-family: var(--font-body);
     font-size: var(--project-fluid-body);
-    line-height: var(--project-fluid-body-lh);
+    line-height: var(--project-fluid-intro-lh);
     margin-bottom: 16px;
     padding-left: 20px;
     list-style: disc;
@@ -329,99 +368,17 @@ if (
     margin-bottom: 8px;
   }
 
-  /* 2-column text wrapper: <div class="text-wide">…</div> */
-  .project__content :global(.text-wide) {
-    grid-column: 1 / span 2;
-  }
-
-  .project__content :global(.text-wide + .text-wide) {
-    margin-top: 24px;
-  }
-
-  .project__content :global(.text-wide p) {
-    font-family: var(--font-body);
-    font-size: var(--project-fluid-body);
-    line-height: var(--project-fluid-body-lh);
-    margin-bottom: 16px;
-  }
-
-  /* Higher specificity than `.text-wide p` (must follow that rule) */
-  .project__content :global(.text-wide p.project__intro-text) {
-    font-family: var(--font-display);
-    font-size: var(--project-fluid-intro);
-    line-height: var(--project-fluid-intro-lh);
-  }
-
-  .project__content :global(.text-wide h3) {
-    font-family: var(--font-display);
-    font-size: var(--project-fluid-h3);
-    font-weight: 400;
-    line-height: var(--project-fluid-display-lh);
-    margin-top: clamp(24px, 2.5vw + 14px, 32px);
-    margin-bottom: 12px;
-  }
-
-  .project__content :global(.text-wide ul),
-  .project__content :global(.text-wide ol) {
-    font-family: var(--font-body);
-    font-size: var(--project-fluid-body);
-    line-height: var(--project-fluid-body-lh);
-    margin-bottom: 16px;
-    padding-left: 20px;
-    list-style: disc;
-  }
-
-  /*
-   * Two 1-column text blocks on one row (cols 1 & 2 of the page grid).
-   * Wrapper spans 2 columns; inner columns split that row with the same gutter as the grid.
-   */
-  .project__content :global(.text-pair-row) {
-    grid-column: 1 / span 2;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 24px;
-    align-items: start;
-  }
-
-  .project__content :global(.text-pair-row__col > *:first-child) {
-    margin-top: 0;
-  }
-
-  .project__content :global(.text-pair-row__col p) {
-    font-family: var(--font-body);
-    font-size: var(--project-fluid-body);
-    line-height: var(--project-fluid-body-lh);
-    margin-bottom: 16px;
-  }
-
-  .project__content :global(.text-pair-row__col ul),
-  .project__content :global(.text-pair-row__col ol) {
-    font-family: var(--font-body);
-    font-size: var(--project-fluid-body);
-    line-height: var(--project-fluid-body-lh);
-    margin-bottom: 16px;
-    padding-left: 20px;
-    list-style: disc;
-  }
-
-  /*
-   * Forces a new row in the 4-col grid so the next item (e.g. col:3 image)
-   * does not sit on the same row as a short .text-pair-row that only spans cols 1–2.
-   */
-  .project__content :global(.project__content-row-break) {
-    grid-column: 1 / -1;
-    min-height: 1px;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    visibility: hidden;
-    pointer-events: none;
+  /* Markdown inline bold: **text** or <strong> */
+  .project__content :global(strong),
+  .project__content :global(b) {
+    font-family: var(--font-strong);
+    font-weight: 700;
   }
 
   /* ── Images & figures ── */
 
   .project__content :global(figure) {
-    grid-column: 1 / span 2;
+    grid-column: 2 / span 2;
     margin: 24px 0;
     display: flex;
     flex-direction: column;
@@ -449,6 +406,7 @@ if (
     line-height: var(--project-fluid-label-lh);
     letter-spacing: 0.4px;
     text-transform: uppercase;
+    text-align: center;
     color: var(--gray-600);
     margin-top: 0;
     flex: 0 0 auto;
@@ -500,7 +458,7 @@ if (
   /* ── Embeds ── */
 
   .project__content :global(.project__embed) {
-    grid-column: 1 / span 2;
+    grid-column: 2 / span 2;
     position: relative;
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -530,6 +488,27 @@ if (
     border: none;
   }
 
+  /* ── XXL: wider gutters & spacing ── */
+  @media (min-width: 1400px) {
+    .project__content {
+      column-gap: 32px;
+    }
+
+    .project__content :global(figure) {
+      margin: 32px 0;
+    }
+
+    .project__content :global(.project__embed) {
+      margin: 32px 0;
+    }
+
+    .project__content :global(.project__content-collage) {
+      column-gap: 32px;
+      row-gap: 20px;
+      margin: 32px 0;
+    }
+  }
+
   /* ── Tablet: 4-col → 2-col ── */
   @media (max-width: 1024px) {
     .project__content {
@@ -540,20 +519,8 @@ if (
     .project__content :global(h3),
     .project__content :global(p),
     .project__content :global(ul),
-    .project__content :global(ol) {
-      grid-column: 1 / span 1;
-    }
-
-    .project__content :global(.text-wide) {
-      grid-column: 1 / -1;
-    }
-
-    .project__content :global(.text-pair-row) {
-      grid-column: 1 / -1;
-      grid-template-columns: 1fr;
-      row-gap: 16px;
-    }
-
+    .project__content :global(ol),
+    .project__content :global(blockquote),
     .project__content :global(figure) {
       grid-column: 1 / -1 !important;
     }
@@ -573,15 +540,6 @@ if (
       grid-template-columns: 1fr;
       margin: 16px 0;
     }
-
-    .project__content :global(.text-pair-row) {
-      display: block;
-    }
-
-    .project__content :global(.project__content-row-break) {
-      display: none;
-    }
-
     .project__content :global(h2) {
       margin-top: 32px;
     }

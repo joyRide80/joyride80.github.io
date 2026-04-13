@@ -26,7 +26,8 @@ heroImages:
 timelineImage: 2
 ---
 
-## My Approach and results
+## My approach and results
+
 As the lead designer, I was responsible for translating this vision into a tangible product. I built the brand from the ground up, established a comprehensive design system, and conducted deep-dive user interviews to ensure the UX addressed real-world pain points. Through rapid prototyping and concept development, I shaped a platform that makes booking a plumber as predictable and easy as any modern digital service.
 
 <!--

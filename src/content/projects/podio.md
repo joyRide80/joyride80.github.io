@@ -1,7 +1,7 @@
 ---
 title: "Podio"
-headline: "Podio"
-subtitle: "Item Redesign"
+headline: "Podio (Citrix)"
+subtitle: "Simplifying Complexity through Content First"
 year: "2014"
 url: "podio.com"
 tags:
@@ -11,8 +11,8 @@ tags:
   - "Lo-fi and Hi-fi prototype"
   - "User Interview"
 category: "Productivity, SaaS"
-introduction: 'As a project management tool, Podio empowers users to tailor their workflow to their specific needs. However, this flexibility also introduces complexity, making it challenging for some users to navigate the system. Our user base is diverse, with different industries utilizing Podio in unique ways. For instance, advertising agencies rely heavily on the activity stream, while recruiting companies focus on tasks. To unlock Podio''s full potential, users must understand and adapt to its underlying structure, which consists of Items, Apps, Workspaces, and Organizations. In Podio, an "Item" is a versatile term that represents any type of user-generated content, such as meetings, contacts, projects, or sales leads. Users have the freedom to customize their Item names, but despite this flexibility, we noticed a concerning trend: new users were creating fewer and fewer Items within the platform.'
-order: 5
+introduction: "Podio is a flexible project management tool that empowers teams to build their own custom workflows. However, this high degree of customisation created significant friction for new users, who struggled to navigate the abstract hierarchy of organisations, workspaces, and Items. Data showed a concerning trend: despite the platform's power, users were creating fewer items due to a disconnected experience between data overviews and detailed content editing."
+order: 1
 thumbnail: "/images/projects/podio/thumbnail.png"
 
 heroImages:
@@ -29,26 +29,36 @@ timelineImage: -1
 timelineAspect: 1.6
 ---
 
-![Podio structure](/images/projects/podio/structure.png)
+## Role & Strategy
 
-So how could we make people understand Podio core values and create more items?
+As a Product Designer, I led the **Content First** redesign of the Podio Item page to bridge the gap between high-level overviews and detailed work. I moved the platform away from complex, navigation-heavy interfaces toward a **Paper-Based Metaphor**," where editing feels as natural as writing on a physical page.
 
-Why users didn't create enough items?
+By conducting user interviews and developing high-fidelity prototypes with seamless transitions, I reduced the cognitive load for users—allowing them to focus on their content rather than the system’s underlying complexity.
+
+![Podio structure|span:1|col:2](/images/projects/podio/structure.png)
+
+## Background and challenges
+
+Our user base is diverse, with different industries utilizing Podio in unique ways. For instance, advertising agencies rely heavily on the activity stream, while recruiting companies focus on tasks. To unlock Podio's full potential, users must understand and adapt to its underlying structure, which consists of Items, Apps, Workspaces, and Organizations.
+
+In Podio, an "Item" is a versatile term that represents any type of user-generated content, such as meetings, contacts, projects, or sales leads. Users have the freedom to customize their Item names, but despite this flexibility, we noticed a concerning trend: new users were creating fewer and fewer Items within the platform.
+
+> So how could we make people understand Podio's core values and create more items?
+
+## Why users didn't create enough items?
 
 - Viewing, creating, and editing content is deep down in the hierarchy of the Podio structure.
 - People lose their context once they click to see the content details from the activity stream or App Layout. This could be explained in 2 ways. First, the experience of perceiving data from the overview and details level is disconnected due to the page load time. Second, once they were on the item page, they couldn't navigate back to where they were.
 - 40% of the item page is dedicated to navigation. The content did not stand out, and it was hard for users to focus on the content.
-- Podio core value — Structure and workflow are abstract that it's not apparent to see on the interface compared with task management or calendar tool.
-
-<img src="/images/projects/podio/old-vs-new.png" alt="Old vs new item page — the blue area indicates navigation" data-cycle="/images/projects/podio/old-vs-new.png,/images/projects/podio/structure.png,/images/projects/podio/thumbnail.png" />
+- Podio's core values—structure and workflow—are abstract, so they were harder to surface in the UI than in tools built around tasks or calendars.
 
 ## The process
 
-We started briefly by researching 2 main concepts of how people use Podio: Overview and Content Details. Overview happens in Activity Stream, Inbox Notification, and App Layout. Content Details, where people can add more content, change the status from 'Working on' to 'Done,' comment on the project, or assign tasks, happens on the item page. We found out that there is a very high frequency from all the workflow that people move between Overview and Content/item page. A good example is a kanban board which is suitable for overview. People can visually see the work progress, but it lacks detail on each card. Moreover, this activity should be so effortless that they should not use their cognitive load for navigation. Instead, it's their content they should focus on. So we come up with a term here: Content First.
+We started by researching two main concepts in how people use Podio: overview and content details. Overview happens in the activity stream, inbox notifications, and app layout. Content details—where people add content, move work from "Working on" to "Done," comment, or assign tasks—live on the item page. We saw very high traffic between overview and the item page. A Kanban board is a good overview surface: you see progress at a glance, but each card lacks depth. That handoff should cost almost no cognitive load for navigation; people should stay focused on their content. That insight became our term: **Content First**.
 
 ## Old solution
 
-In the old solution, we heavily focused on the flow between the App layout and the item page by implementing the interaction feature called Slidy Panel. When users are in the App layout, they can click on the item list, and the item details will Slide in from the right of the screen. By doing this, users can see more information without leaving the page, so the experience of moving between overview and detail is not interrupted by page loading time. However, we realized that this solution solved one thing but added another complexity.
+In the old solution, we focused heavily on the flow between app layout and the item page using an interaction pattern called the Slidy Panel. In app layout, clicking a list item slid item details in from the right so people saw more without a full navigation jump, and overview-to-detail felt uninterrupted by page loads. The trade-off was new complexity elsewhere in the product.
 
 ![Slidy Panel interaction](/images/projects/podio/slidy-panel.png)
 
@@ -60,9 +70,9 @@ In the old solution, we heavily focused on the flow between the App layout and t
 
 ### Paper-Based Metaphor
 
-We decided to remove Slidy Panel and came up with a new flow pattern — navigating between overview and detail content. This pattern should be used all over Podio. After a couple of days of workshop in the shipyard area on the outskirt of Copenhagen, we came up with Content First. It leads us to design the new item page where users just focus on the content. And paper metaphor is close to what the content should be presented.
+We decided to remove the Slidy Panel and align on a single flow pattern for moving between overview and detail—one that could work across Podio. After a workshop in the shipyard area on the outskirts of Copenhagen, we landed on Content First. That led us to the new item page, where the content itself is the hero. The paper metaphor matched how we wanted that content to feel.
 
-Each item is represented as a piece of paper.
+> Each item is represented as a piece of paper.
 
 The concept of paper helps us to explain how information is structured in Podio since it's tangible. It also reflects in visual representation - an item is a white piece area on top of subtle grey. The comment is an additional element attached to the right of it.
 
@@ -70,18 +80,18 @@ The concept of paper helps us to explain how information is structured in Podio 
 
 ### Good Old Breadcrumb
 
-We tidied up the navigation by analyzing users' behavior. We removed app navigation since we found that not many people navigate between apps. We used Breadcrumb as the primary navigation since it took less space and was very descriptive. We use fewer icons and be more explicit using text.
+We tidied up navigation from real usage data. We removed app-level navigation where we saw little cross-app hopping, and promoted breadcrumbs as the primary wayfinding pattern: compact, explicit, and text-forward. We used fewer icons and relied on clear labels.
 
-No Edit Mode. It's paper. Just write as you write on paper.
+### No Edit Mode. It's paper. Just write as you write on paper.
 
-Ultimately, we would like to deliver the whole experience of reading and writing on paper by using less few web interface controls as possible. For example, people should just write and change the content without changing from reading to writing mode. So we removed Edit Mode and let them write on the item page as if they write on a word processor — No boxy border around the content.
+Ultimately, we wanted reading and writing to feel like paper, with as few chrome-heavy controls as possible. People should edit in place without flipping between separate "read" and "write" modes, so we removed Edit Mode and let them work on the item page like a word processor—no heavy frame around the content.
 
-Animation is crucial to explain items and their relationship
+### Animation is crucial to explain items and their relationships
 
-We have learned that the transition between overview and content needs to be seamless. We again used the concept of paper popping up on top of any overview pages — App Layout, Activity stream, or Inbox. We presented the idea to the developers to convince them that loading content on top of existing one must be very fast, and it shouldn't make people feel that they have left the page. They should still feel that they are reading something on the overview page. The animation below shows how to create an item on top of an App Layout page.
+We learnt that transitions between overview and detail had to feel seamless. We reused the "paper lifts above the desk" metaphor across app layout, the activity stream, and inbox. We worked closely with engineering so content could load quickly on top of an existing view without feeling like a hard navigation break—people should still feel anchored to where they started. The animation below shows creating an item on top of an app layout page.
 
 ![Item creation animation](/images/projects/podio/item-animation.gif)
 
-Using paper metaphors also helps us visualize the relationship between items. I have developed a lot of diagrams by studying the arrangement of stacked paper as the reference point. Referencing an item to another item is one of the most advanced and complicated features in Podio.
+Using paper metaphors also helps us visualise the relationship between items. I have developed a lot of diagrams by studying the arrangement of stacked paper as the reference point. Referencing an item to another item is one of the most advanced and complicated features in Podio.
 
-![Diagram showing how to use 3 dimensions space to explain the relationship among items](/images/projects/podio/relationship-diagram.png)
+![Diagram showing how to use three-dimensional space to explain relationships among items](/images/projects/podio/relationship-diagram.png)

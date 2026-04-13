@@ -28,7 +28,7 @@ heroImages:
 
 ## Start with why
 
-Although much good educational contents are available in many apps, they are relatively passive. As a result, learners can quickly lose their attention, like in their classes. So we devised the idea to use our existing technology to improve the learning experience.
+Although a lot of good educational content is available in many apps, it is relatively passive. As a result, learners can quickly lose their attention, as in class. So we devised the idea to use our existing technology to improve the learning experience.
 
 <figure>
   <div class="project__embed project__embed--vertical">
@@ -36,8 +36,8 @@ Although much good educational contents are available in many apps, they are rel
   </div>
 </figure>
 <figure>
-  <img src = "/images/projects/digital-science-teacher/sketch.jpg" alt="The hand-drawn sketch explores how to visualize the formation of planet earth">
-    <figcaption>The hand-drawn sketch explores how to visualize the formation of planet earth</figcaption>
+  <img src="/images/projects/digital-science-teacher/sketch.jpg" alt="The hand-drawn sketch explores how to visualise the formation of planet earth">
+    <figcaption>The hand-drawn sketch explores how to visualise the formation of planet earth</figcaption>
 </figure>
 
 ## Small screen
@@ -52,6 +52,6 @@ We created our first prototype using the concept of card layout. Each lesson onl
 
 ![Card layout prototype](/images/projects/digital-science-teacher/card-prototype.png)
 
-## Card layout VS Chat dialogue
+## Card layout vs. chat dialogue
 
-We continued working on the card interface with various science subjects, and later on, we realized that when adding questions on cards, we tend to add more informative content. All the visible areas on the cards mostly belonged to the teacher, not the learners. While using a chat interface, the learner's content is more visible. They can tell the digital teacher if they get lost. The communication is more mutual and natural.
+We continued working on the card interface with various science subjects, and later on, we realised that when adding questions on cards, we tend to add more informative content. All the visible areas on the cards mostly belonged to the teacher, not the learners. While using a chat interface, the learner's content is more visible. They can tell the digital teacher if they get lost. The communication is more mutual and natural.

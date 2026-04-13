@@ -29,24 +29,7 @@ Rendered above the article body in `src/pages/projects/[slug].astro`. Each item 
 
 ### Markdown body (`project__content`)
 
-**Text** — headings, paragraphs, and lists default to **1 column** width, aligned to the first column. For **2-column** body text (one block spanning columns 1–2), wrap content in:
-
-```html
-<div class="text-wide">Your markdown paragraphs here.</div>
-```
-
-**Two 1-column columns on one row** (left column = grid column 1, right column = grid column 2; each uses the same default type width as a single column, side by side). Put a blank line after each opening `<div>` so markdown inside is parsed:
-
-```html
-<div class="text-pair-row">
-  <div class="text-pair-row__col">
-    First column: markdown paragraphs or lists here.
-  </div>
-  <div class="text-pair-row__col">Second column: more markdown here.</div>
-</div>
-```
-
-On **≤1024px** this row stacks into one column. On **≤768px** it stays stacked (same as the rest of the body).
+**Text** — headings (`##`, `###`) are placed in the first column and take 1 column width. Paragraphs, lists, and quotes automatically start in the 2nd column and span 2 columns width. They automatically align on the same row, so you don't need any layout wrappers.
 
 **Images** — placement is set in the **alt text** (parsed at build time by `src/lib/remarkProjectContentCollage.mjs`). After `|span|` / `|col|` are removed, the remainder is shown as a **visible `<figcaption>`** under the image (and used as the `img` `alt` text). A leading word `visible` (case-insensitive) is stripped from that caption only—it is not a special keyword.
 
@@ -70,6 +53,8 @@ On **≤1024px** this row stacks into one column. On **≤768px** it stays stack
 ```
 
 On **≤768px** (block layout) this break is hidden so it does not add extra space.
+
+You can still use raw HTML `<div class="...">` wrappers, but directives keep content cleaner and preserve normal markdown parsing (for example `**bold**`).
 
 **Hero-style collage in the body** — use raw HTML with `class="project__collage"` and tiles `project__collage-item project__collage-item--large` / `--small` / `--full` (same vocabulary as frontmatter). See `src/content/projects/yob.md` for a working example.
 

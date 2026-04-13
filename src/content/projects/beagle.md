@@ -34,12 +34,12 @@ Around October 2014, some of the existing Podio team, including me, started a sm
 
 <figure>
   <img src="/images/projects/beagle/sculpture.jpg" alt="Paper sculpture on desk for the pre-launch event" />
-  <figcaption>We later on decided on the name Beagle. So I made this Origami Beagle for the pre-launch event. I made this paper sculpture in an abstract form since we didn't know at that time what the product would be.</figcaption>
+  <figcaption>We later decided on the name Beagle, so I made this origami beagle for the pre-launch event. I made this paper sculpture in an abstract form since we didn't yet know what the product would be.</figcaption>
 </figure>
 
 ## Modular design concept
 
-Writing a proposal is a tedious activity. Agencies sent out several proposals per day. Most of them share the same patterns or content. We look at this pain point and see if our technology can solve their problems. Our solution is to let agencies create their proposal using a reusable block of content. We aimed to make it easy for team members to edit the content and track the flow. They can touch up the looking and feel of the proposal they made using our Design Studio feature. All of this flow is finished in one place and on browsers.
+Writing a proposal is a tedious activity. Agencies send out several proposals per day, and many share the same patterns or content. We looked at this pain point to see whether our technology could help. Our solution was to let agencies build proposals from reusable blocks of content. We aimed to make it easy for team members to edit the content and track the flow. They could refine the look and feel of each proposal using our Design Studio feature. The whole flow stayed in one place, in the browser.
 
 ## How Beagle works
 
@@ -57,7 +57,7 @@ Writing a proposal is a tedious activity. Agencies sent out several proposals pe
   <figcaption>This short video gives a quick introduction to some of Beagle’s essential features</figcaption>
 </figure>
 
-There are four main screens in Beagle — An overview screen where writers can work with other team members and see all the proposal statuses. Then, on a detailed screen, they can focus on their content. Here, they can pick or replace each section from the section screen. Finally, with a design studio screen, they can craft the look and feel of their beautiful proposal.
+There are four main screens in Beagle: an overview where writers collaborate and see proposal statuses; a detail view for focusing on the proposal body; a section library for picking or replacing blocks; and a design studio for refining the look and feel of the finished proposal.
 
 ![The four key screens](/images/projects/beagle/four-screens.png)
 

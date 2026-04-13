@@ -159,7 +159,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const gap = 12;
     const isMobile = viewW < 768;
     const isTablet = viewW >= 768 && viewW < 1024;
-    const sizeScale = isMobile ? 0.55 : isTablet ? 0.75 : 1;
+    const isXxl = viewW >= 1400;
+    const sizeScale = isMobile ? 0.55 : isTablet ? 0.75 : isXxl ? 1.12 : 1;
 
     const totalProjects = projects.length;
     const items = [];
@@ -341,10 +342,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const sorted = [...projects].sort(compareProjectsChronological);
     const isMobile = window.innerWidth < 768;
+    const isXxl = window.innerWidth >= 1400;
     const baseHeights = [224, 288, 304, 272, 240];
     const heights = isMobile
       ? baseHeights.map((h) => Math.round(h * 0.65))
-      : baseHeights;
+      : isXxl
+        ? baseHeights.map((h) => Math.round(h * 1.1))
+        : baseHeights;
     const aspectRatios = [0.8, 1.1, 1.45, 0.95, 1.6];
 
     sorted.forEach((project) => {
