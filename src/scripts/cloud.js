@@ -336,6 +336,59 @@ document.addEventListener("DOMContentLoaded", () => {
   // ============================================================
   // Render timeline items — 1 image per project, configurable pick
   // ============================================================
+  /** Must match `.timeline__item` horizontal padding in global.css (px). */
+  const TIMELINE_ITEM_PADDING = 24;
+
+  /** Caps portrait-tall tiles; landscape heights stay unchanged (below this). */
+  function timelineItemMaxOuterHeightPx() {
+    const vh =
+      typeof window !== "undefined" && window.innerHeight > 0
+        ? window.innerHeight
+        : 900;
+    return Math.min(240, Math.max(280, Math.round(vh * 0.4)));
+  }
+
+  function capTimelineOuterHeight(outerH) {
+    return Math.min(outerH, timelineItemMaxOuterHeightPx());
+  }
+
+  function timelineInnerWidth(tileW) {
+    return Math.max(1, tileW - 2 * TIMELINE_ITEM_PADDING);
+  }
+
+  function syncTimelineCoverMediaSize(el) {
+    const tileW = el._timelineTileW;
+    if (!tileW || el.classList.contains("timeline__item--video")) return;
+    const media = el.querySelector(":scope > img, :scope > video");
+    if (!media) return;
+    let nw = 0;
+    let nh = 0;
+    if (media.tagName === "IMG") {
+      nw = media.naturalWidth;
+      nh = media.naturalHeight;
+    } else if (media.tagName === "VIDEO") {
+      nw = media.videoWidth;
+      nh = media.videoHeight;
+    }
+    if (!nw || !nh) return;
+    const innerW = timelineInnerWidth(tileW);
+    const innerH = Math.max(1, Math.round((innerW * nh) / nw));
+    const outerH = capTimelineOuterHeight(innerH + 2 * TIMELINE_ITEM_PADDING);
+    el.dataset.baseW = String(tileW);
+    el.dataset.baseH = String(outerH);
+    el.style.width = `${tileW}px`;
+    el.style.height = `${outerH}px`;
+  }
+
+  function bindTimelineCoverMediaResize(el) {
+    const media = el.querySelector(":scope > img, :scope > video");
+    if (!media) return;
+    const onDecodable = () => syncTimelineCoverMediaSize(el);
+    media.addEventListener("load", onDecodable);
+    media.addEventListener("loadedmetadata", onDecodable);
+    syncTimelineCoverMediaSize(el);
+  }
+
   function renderTimeline() {
     if (!timelineTrack) return;
     timelineTrack.innerHTML = "";
@@ -343,13 +396,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const sorted = [...projects].sort(compareProjectsChronological);
     const isMobile = window.innerWidth < 768;
     const isXxl = window.innerWidth >= 1400;
-    const baseHeights = [224, 288, 304, 272, 240];
-    const heights = isMobile
-      ? baseHeights.map((h) => Math.round(h * 0.65))
-      : isXxl
-        ? baseHeights.map((h) => Math.round(h * 1.1))
-        : baseHeights;
-    const aspectRatios = [0.8, 1.1, 1.45, 0.95, 1.6];
+    /** Equal width for every tile; image height follows intrinsic aspect (no crop). */
+    const tileW = isMobile ? 140 : isXxl ? 220 : 200;
 
     sorted.forEach((project) => {
       const idx = project.timelineImage ?? 0;
@@ -363,16 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const el = document.createElement("div");
       el.className = "timeline__item";
       el.dataset.slug = project.slug;
-
-      const h = heights[project.order % heights.length];
-      const ratio =
-        project.timelineAspect ??
-        aspectRatios[project.order % aspectRatios.length];
-      const w = Math.round(h * ratio);
-      el.dataset.baseW = w;
-      el.dataset.baseH = h;
-      el.style.width = `${w}px`;
-      el.style.height = `${h}px`;
+      el._timelineTileW = tileW;
 
       const imagePool = getProjectImagePool(project);
       el._imagePool = imagePool;
@@ -381,6 +420,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (project.timelineVideoEmbed) {
         el.classList.add("timeline__item--video");
+
+        const embedWh =
+          typeof project.timelineAspect === "number" &&
+          project.timelineAspect > 0
+            ? project.timelineAspect
+            : 16 / 9;
+        const innerW = timelineInnerWidth(tileW);
+        const innerH = Math.max(1, Math.round(innerW / embedWh));
+        const outerH = capTimelineOuterHeight(
+          innerH + 2 * TIMELINE_ITEM_PADDING,
+        );
+        el.dataset.baseW = String(tileW);
+        el.dataset.baseH = String(outerH);
+        el.style.width = `${tileW}px`;
+        el.style.height = `${outerH}px`;
 
         const posterEl = document.createElement("img");
         posterEl.className = "timeline__video-poster";
@@ -402,7 +456,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         el.appendChild(videoEl);
       } else {
+        const innerW = timelineInnerWidth(tileW);
+        const provisionalInnerH = Math.round((innerW * 5) / 4);
+        const provisionalH = capTimelineOuterHeight(
+          provisionalInnerH + 2 * TIMELINE_ITEM_PADDING,
+        );
+        el.dataset.baseW = String(tileW);
+        el.dataset.baseH = String(provisionalH);
+        el.style.width = `${tileW}px`;
+        el.style.height = `${provisionalH}px`;
         appendCoverMedia(el, imgSrc, project.title);
+        bindTimelineCoverMediaResize(el);
       }
 
       el.addEventListener("mouseenter", () => handleTimelineHover(project, el));
@@ -422,8 +486,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ============================================================
-  // Timeline depth-zoom hover + image strobe cycle
+  // Timeline: optional always-on image cycle (timelineCycle only)
   // ============================================================
+  function getTimelineMediaElements(el) {
+    if (el.classList.contains("timeline__item--video")) {
+      return [
+        el.querySelector(".timeline__video-poster"),
+        el.querySelector("iframe"),
+      ].filter(Boolean);
+    }
+    return Array.from(el.querySelectorAll(":scope > img, :scope > video"));
+  }
+
   function startTimelineCycle(el) {
     stopTimelineCycle(el);
     const pool = el._imagePool;
@@ -439,6 +513,9 @@ document.addEventListener("DOMContentLoaded", () => {
     el._cycleInterval = setInterval(() => {
       cycleIndex = (cycleIndex + 1) % pool.length;
       imgEl.src = pool[cycleIndex];
+      imgEl.addEventListener("load", () => syncTimelineCoverMediaSize(el), {
+        once: true,
+      });
     }, 280);
     el.classList.add("is-cycling");
   }
@@ -453,6 +530,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const imgEl = el.querySelector("img");
       if (imgEl) {
         imgEl.src = el._originalSrc;
+        imgEl.addEventListener("load", () => syncTimelineCoverMediaSize(el), {
+          once: true,
+        });
+        if (imgEl.complete && imgEl.naturalWidth) {
+          syncTimelineCoverMediaSize(el);
+        }
       } else {
         const vid = el.querySelector(":scope > video");
         if (vid) vid.src = el._originalSrc;
@@ -481,7 +564,14 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    startTimelineCycle(hoveredEl);
+    getTimelineMediaElements(hoveredEl).forEach((m) => {
+      gsap.to(m, {
+        scale: 1.08,
+        duration: 0.45,
+        ease: "power2.out",
+        transformOrigin: "50% 50%",
+      });
+    });
     showOverlay(project);
   }
 
@@ -491,6 +581,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!el._autoCycle) {
         stopTimelineCycle(el);
       }
+      getTimelineMediaElements(el).forEach((m) => {
+        gsap.to(m, {
+          scale: 1,
+          duration: 0.45,
+          ease: "power2.out",
+        });
+      });
       gsap.to(el, {
         width: Number(el.dataset.baseW),
         height: Number(el.dataset.baseH),

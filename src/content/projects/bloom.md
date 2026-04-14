@@ -15,7 +15,7 @@ tags:
 category: "Edtech, Educational Game"
 introduction: "Bloom is an educational game designed to teach the life cycle of plants through intuitive, hands-on interaction. Rather than relying on traditional instructions or text-heavy explanations, Bloom utilizes a discovery-based model. It allows children to grasp complex scientific concepts—such as seed dispersal and growth—entirely through visual storytelling and interactive play."
 order: 3
-thumbnail: "/images/projects/bloom/bird_app_icon.png"
+thumbnail: "/images/projects/bloom/bird.png"
 heroImages:
 - size: "full"
   src: "/images/projects/bloom/dandilion-bg.png"

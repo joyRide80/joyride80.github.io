@@ -172,14 +172,33 @@ if (
                 <div class="project__collage-item-media">
                   {img.src &&
                     (isVideoAssetPath(img.src) ? (
-                    <video
-                      src={img.src}
-                      muted
-                      loop
-                      playsinline
-                      autoplay
-                      aria-label={img.caption || headline}
-                    />
+                    img.embedVertical ? (
+                      <div
+                        class:list={[
+                          'project__collage-embed',
+                          'project__embed',
+                          'project__embed--vertical',
+                        ]}
+                      >
+                        <video
+                          src={img.src}
+                          muted
+                          loop
+                          playsinline
+                          autoplay
+                          aria-label={img.caption || headline}
+                        />
+                      </div>
+                    ) : (
+                      <video
+                        src={img.src}
+                        muted
+                        loop
+                        playsinline
+                        autoplay
+                        aria-label={img.caption || headline}
+                      />
+                    )
                   ) : (
                     <img
                       src={img.src}

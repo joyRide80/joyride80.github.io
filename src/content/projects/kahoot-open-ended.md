@@ -24,7 +24,7 @@ heroImages:
   - src: "/images/projects/kahoot/slider.png"
     caption: ""
     size: "large"
-timelineImage: -1
+timelineImage: 1
 ---
 
 ## My Approach
