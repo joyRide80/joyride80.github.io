@@ -14,9 +14,13 @@ introduction: "Kahoot! is a global learning platform known for its fast-paced, m
 order: 5
 thumbnail: "/images/projects/kahoot/kahootLogo.png"
 heroImages:
+  - size: "small-split"
+    splitImages:
+      - "/images/projects/kahoot/kahootLogo.png"
+      - "/images/projects/kahoot/host_screen_test.png"
   - src: "/images/projects/kahoot/thumbnail.png"
     caption: ""
-    size: "large"
+    size: "small"
   - src: "/images/projects/kahoot/slider.png"
     caption: ""
     size: "large"
@@ -28,8 +32,6 @@ timelineImage: -1
 As a Product Designer, I led the design of this feature to help teachers test student recall without visual cues. I focused on maintaining Kahoot!’s signature "quick and fun" energy.
 
 while building a UI that could handle diverse text inputs. Through prototyping and user testing, I bridged the gap between casual engagement and serious academic evaluation.
-
-![|span:1|col:2](/images/projects/kahoot/kahootLogo.png)
 
 ## Exploration
 

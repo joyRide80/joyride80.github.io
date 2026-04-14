@@ -19,7 +19,7 @@ heroImages:
     src: "/images/projects/beagle/office_bg.png"
     overlayVideo: "/images/projects/beagle/beagle-video.mp4"
     overlayVideoWidth: "60%" # You can tweak this string (e.g., "50%", "800px")
-timelineImage: 2
+timelineImage: -1
 timelineAspect: 0.8
 ---
 

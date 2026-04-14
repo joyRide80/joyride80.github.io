@@ -1,57 +1,39 @@
 ---
 title: "Bloom"
 headline: "Bloom: Educational iPad App for kids"
-subtitle: "An App That Guides You Through Mini Interactive Lessons Around Science and Technology"
+subtitle: "An Immersive, Text-free Exploration of Plant Biology"
 year: "2016"
-url: ""
+url: "App Store"
+urlHref: "https://apps.apple.com/us/app/bloom-by-megalearn/id1136202811"
+urlLabel: "App Store"
 tags:
   - "Visual design"
   - "Animation"
   - "Illustration"
   - "Concept development"
   - "Research"
-category: "Edtech"
-introduction: "We decided to develop this app as a prototype first to learn if our target users would adopt this way of learning. So we created the app using Swift and pre-animated it in After Effects."
+category: "Edtech, Educational Game"
+introduction: "Bloom is an educational game designed to teach the life cycle of plants through intuitive, hands-on interaction. Rather than relying on traditional instructions or text-heavy explanations, Bloom utilizes a discovery-based model. It allows children to grasp complex scientific concepts—such as seed dispersal and growth—entirely through visual storytelling and interactive play."
 order: 3
-thumbnail: "/images/projects/digital-science-teacher/video_preview.png"
-timelineVideoEmbed: "https://player.vimeo.com/video/763201640?background=1&autopause=0&loop=1"
-timelineVideoPoster: "/images/projects/digital-science-teacher/video_preview.png"
-timeLineAspect: 0.6 #vertical video
+thumbnail: "/images/projects/bloom/bird_app_icon.png"
 heroImages:
-  - src: "/images/projects/digital-science-teacher/video_preview.png"
-    size: "small"
-  - src: "/images/projects/digital-science-teacher/digitalScienceTeacher.png"
-    size: "large"
-  - src: "/images/projects/digital-science-teacher/skydrive.png"
-    size: "large"
+- size: "full"
+  src: "/images/projects/bloom/dandilion-bg.png"
+  overlayVideo: "/images/projects/bloom/bloom_video_final.mp4"
+  overlayVideoWidth: "60%" # You can tweak this string (e.g., "50%", "800px")
+timelineImage: -1
 ---
 
-## Start with why
+## My Contribution:
 
-Although a lot of good educational content is available in many apps, it is relatively passive. As a result, learners can quickly lose their attention, as in class. So we devised the idea to use our existing technology to improve the learning experience.
+As a Product Designer and Illustrator, I developed the core game concept, gameplay mechanics, and the entire visual identity. I hand-drew every illustration to create a warm, organic atmosphere that encourages curiosity. 
 
-<figure>
-  <div class="project__embed project__embed--vertical">
-    <iframe src="https://player.vimeo.com/video/763201640?title=0&amp;byline=0&amp;portrait=0&amp;color=ab9&amp;background=1&amp;autoplay=1&amp;muted=1&amp;autopause=0&amp;loop=1&amp;api=1&amp;app_id=122963" width="240" height="426" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" referrerpolicy="strict-origin-when-cross-origin" title="digitalScienceTeacher" data-ready="true" style="width: 100%; height: 100%;"></iframe>
-  </div>
-</figure>
-<figure>
-  <img src="/images/projects/digital-science-teacher/sketch.jpg" alt="The hand-drawn sketch explores how to visualise the formation of planet earth">
-    <figcaption>The hand-drawn sketch explores how to visualise the formation of planet earth</figcaption>
-</figure>
+By removing all text from the interface, I focused on a **wordless** interaction system where the physics and animations communicate the educational value. Feedback has highlighted how this low-paced, meditative approach allows learners to absorb biological principles naturally, making science accessible to children regardless of their reading level.
 
-## Small screen
+![|span:2|col:1](/images/projects/bloom/seedfly.jpg)
 
-Our target audience is middle school students shifting from iPad to laptop use. Most of them own smartphones. Believing that touchscreen interaction allows children to engage intuitively in learning, we developed an app primarily for smartphone users. The lessons in this app adapt to the individual child. They are suggested based on the child's interests and progress.
+![|span:2|col:3](/images/projects/bloom/flower_bloom.png)
 
-![App screens](/images/projects/digital-science-teacher/app-screens.png)
+![|span:3|col:1](/images/projects/bloom/coconut_start.jpg)
 
-## Card layout prototype
 
-We created our first prototype using the concept of card layout. Each lesson only has 5-7 cards. Each card contains a question, and the learners have to interact actively with the cards.
-
-![Card layout prototype](/images/projects/digital-science-teacher/card-prototype.png)
-
-## Card layout vs. chat dialogue
-
-We continued working on the card interface with various science subjects, and later on, we realised that when adding questions on cards, we tend to add more informative content. All the visible areas on the cards mostly belonged to the teacher, not the learners. While using a chat interface, the learner's content is more visible. They can tell the digital teacher if they get lost. The communication is more mutual and natural.

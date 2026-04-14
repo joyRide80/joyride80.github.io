@@ -21,12 +21,16 @@ const projects = (await getCollection('projects')).sort(compareProjectCollection
 const currentIndex = projects.findIndex(p => p.id === project.id);
 const prevProject = currentIndex > 0 ? projects[currentIndex - 1] : projects[projects.length - 1];
 const nextProject = currentIndex < projects.length - 1 ? projects[currentIndex + 1] : projects[0];
-const { title, headline, subtitle, year, url, tags, category, introduction } = project.data;
+const { title, headline, subtitle, year, url, urlHref: urlHrefRaw, urlLabel, tags, category, introduction } = project.data;
 const displayCategory = normalizeProjectCategory(category);
 const urlTrimmed = url?.trim() ?? '';
+const urlHrefTrimmed = urlHrefRaw?.trim() ?? '';
+const urlLabelTrimmed = urlLabel?.trim() ?? '';
+const urlHrefSource = urlHrefTrimmed || urlTrimmed;
 const urlHref =
-  urlTrimmed &&
-  (/^https?:\/\//i.test(urlTrimmed) ? urlTrimmed : `https://${urlTrimmed.replace(/^\/+/, '')}`);
+  urlHrefSource &&
+  (/^https?:\/\//i.test(urlHrefSource) ? urlHrefSource : `https://${urlHrefSource.replace(/^\/+/, '')}`);
+const urlDisplayText = urlLabelTrimmed || urlTrimmed;
 const baseUrl = import.meta.env.BASE_URL;
 const heroImages =
   project.data.heroImages?.map((img) => ({
@@ -118,7 +122,7 @@ if (
             {urlHref && (
               <p class="project__meta-url-line">
                 <a class="project__meta-url-link" href={urlHref} rel="noopener noreferrer" target="_blank">
-                  {urlTrimmed}
+                  {urlDisplayText}
                 </a>
               </p>
             )}

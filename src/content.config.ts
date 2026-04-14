@@ -9,6 +9,8 @@ const projectsCollection = defineCollection({
     subtitle: z.string(),
     year: z.string(),
     url: z.string().optional(),
+    urlHref: z.string().optional(),
+    urlLabel: z.string().optional(),
     tags: z.array(z.string()),
     category: z.string(),
     introduction: z.string().optional(),
