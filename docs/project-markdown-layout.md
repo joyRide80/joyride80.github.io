@@ -12,7 +12,10 @@ At the top of each project `.md` file, `heroImages` drives the collage **above**
 
 - `large` → CSS class `project__collage-item--large` (spans 2 of 5 grid columns)
 - `small` → `project__collage-item--small` (spans 1 column)
+- `small-split` → `project__collage-item--small-split` (spans 1 column, holds 2 stacked images via `splitImages` array)
 - `medium` → allowed by the content schema, but **there is no** `.project__collage-item--medium` rule in `src/styles/global.css` yet; prefer `large` / `small` until that exists.
+
+You can also use `overlayVideo` (and `overlayVideoWidth`) on any hero image to place a layered `<video>` element perfectly centered on top of the main `src` background.
 
 Rendered by `src/pages/projects/[slug].astro` (not from markdown body).
 

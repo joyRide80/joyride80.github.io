@@ -32,6 +32,10 @@ const heroImages =
   project.data.heroImages?.map((img) => ({
     ...img,
     src: img.src ? (withBasePublicPath(img.src, baseUrl) ?? img.src) : undefined,
+    overlayVideo: img.overlayVideo ? (withBasePublicPath(img.overlayVideo, baseUrl) ?? img.overlayVideo) : undefined,
+    splitImages: img.splitImages?.map(
+      (u) => withBasePublicPath(u, baseUrl) ?? u,
+    ),
     cycleImages: img.cycleImages?.map(
       (u) => withBasePublicPath(u, baseUrl) ?? u,
     ),
@@ -46,6 +50,17 @@ for (const h of heroImages) {
     !projectImagePool.includes(h.src)
   ) {
     projectImagePool.push(h.src);
+  }
+  if (h.splitImages) {
+    for (const splitImg of h.splitImages) {
+      if (
+        splitImg &&
+        !isVideoAssetPath(splitImg) &&
+        !projectImagePool.includes(splitImg)
+      ) {
+        projectImagePool.push(splitImg);
+      }
+    }
   }
 }
 const thumbPrefixed =
@@ -132,47 +147,78 @@ if (
             }
             return (
             <div class={`project__collage-item project__collage-item--${img.size}`}>
-              <div class="project__collage-item-media">
-                {img.src &&
-                  (isVideoAssetPath(img.src) ? (
-                  <video
-                    src={img.src}
-                    muted
-                    loop
-                    playsinline
-                    autoplay
-                    aria-label={img.caption || headline}
-                  />
-                ) : (
-                  <img
-                    src={img.src}
-                    alt={img.caption ? '' : headline}
-                    loading="lazy"
-                    data-cycle={cyclePoolJson}
-                  />
-                ))}
-                {img.videoEmbed && (
-                  <div
-                    class:list={[
-                      'project__collage-embed',
-                      'project__embed',
-                      { 'project__embed--vertical': img.embedVertical },
-                    ]}
-                  >
-                    <iframe
-                      src={img.videoEmbed}
-                      title={img.caption || headline}
-                      width={img.embedVertical ? 240 : 640}
-                      height={img.embedVertical ? 426 : 360}
-                      frameborder="0"
-                      allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                      referrerpolicy="strict-origin-when-cross-origin"
-                      loading="lazy"
-                      allowfullscreen
-                    />
+              {img.size === 'small-split' && img.splitImages && img.splitImages.length === 2 ? (
+                <div class="project__collage-item-split-container">
+                  <div class="project__collage-item-media">
+                    {isVideoAssetPath(img.splitImages[0]) ? (
+                      <video src={img.splitImages[0]} muted loop playsinline autoplay aria-label={headline} />
+                    ) : (
+                      <img src={img.splitImages[0]} alt={headline} loading="lazy" />
+                    )}
                   </div>
-                )}
-              </div>
+                  <div class="project__collage-item-media">
+                    {isVideoAssetPath(img.splitImages[1]) ? (
+                      <video src={img.splitImages[1]} muted loop playsinline autoplay aria-label={headline} />
+                    ) : (
+                      <img src={img.splitImages[1]} alt={headline} loading="lazy" />
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div class="project__collage-item-media">
+                  {img.src &&
+                    (isVideoAssetPath(img.src) ? (
+                    <video
+                      src={img.src}
+                      muted
+                      loop
+                      playsinline
+                      autoplay
+                      aria-label={img.caption || headline}
+                    />
+                  ) : (
+                    <img
+                      src={img.src}
+                      alt={img.caption ? '' : headline}
+                      loading="lazy"
+                      data-cycle={cyclePoolJson}
+                    />
+                  ))}
+                  {img.videoEmbed && (
+                    <div
+                      class:list={[
+                        'project__collage-embed',
+                        'project__embed',
+                        { 'project__embed--vertical': img.embedVertical },
+                      ]}
+                    >
+                      <iframe
+                        src={img.videoEmbed}
+                        title={img.caption || headline}
+                        width={img.embedVertical ? 240 : 640}
+                        height={img.embedVertical ? 426 : 360}
+                        frameborder="0"
+                        allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        loading="lazy"
+                        allowfullscreen
+                      />
+                    </div>
+                  )}
+                  {img.overlayVideo && (
+                    <video
+                      class="project__collage-overlay-video"
+                      src={img.overlayVideo}
+                      style={{ width: img.overlayVideoWidth || '60%' }}
+                      muted
+                      loop
+                      playsinline
+                      autoplay
+                      aria-label={img.caption || headline}
+                    />
+                  )}
+                </div>
+              )}
               {img.caption && (
                 <p class="project__image-caption">{img.caption}</p>
               )}

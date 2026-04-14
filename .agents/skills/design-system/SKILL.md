@@ -291,7 +291,14 @@ heroImages:
   - src: "/images/projects/klara/hero-3.png"
     caption: "Overview page"
     size: "small" # span 1 col
-  # size: "full"        # span 4 cols (full width)
+  - size: "small-split" # span 1 col, stacked 2 images
+    splitImages:
+      - "/images/projects/bloom/img1.png"
+      - "/images/projects/bloom/img2.png"
+  - src: "/images/projects/klara/hero-4.png"
+    size: "full" # span 4 cols (full width)
+    overlayVideo: "/images/projects/klara/demo.mp4" # optional video overlay
+    overlayVideoWidth: "60%" # optional width for the overlay
 ---
 ```
 

@@ -1,4 +1,5 @@
 import { withBasePublicPath } from "./withBasePublicPath.js";
+import { getYouTubeEmbedSrc } from "./youtubeEmbedUrl.js";
 
 /**
  * Remark plugin for the 4-column project page grid.
@@ -6,6 +7,9 @@ import { withBasePublicPath } from "./withBasePublicPath.js";
  * Images can carry placement metadata in their alt text:
  *   ![alt text|span:2|col:3](/path/to/image.png)
  *   ![alt|cycle:/a.png,/b.png](/main.png)
+ *
+ * YouTube watch / youtu.be / embed URLs in `![](…)` render as the same
+ * `<figure><div class="project__embed"><iframe>…` block as raw HTML embeds.
  *
  * - span:N  → grid-column span (1–4, default 2)
  * - col:N   → grid-column start (1–4, default 1)
@@ -88,8 +92,6 @@ function buildGridFigure(img, baseWithSlash) {
     baseWithSlash,
   );
   const mainUrl = img.url || "";
-  const prefixedUrl = withBasePublicPath(mainUrl, baseWithSlash) ?? mainUrl;
-  const src = escapeAttr(prefixedUrl);
   const captionText = stripVisiblePrefix(alt);
   const cleanAlt = escapeAttr(captionText);
   const figcaption =
@@ -99,6 +101,28 @@ function buildGridFigure(img, baseWithSlash) {
 
   const gridCol = col ?? 1;
   const gridSpan = span ?? 2;
+
+  const youtubeSrc = getYouTubeEmbedSrc(mainUrl);
+  if (youtubeSrc) {
+    const iframeSrc = escapeAttr(youtubeSrc);
+    const iframeTitle =
+      captionText.length > 0 ? cleanAlt : escapeAttr("YouTube video player");
+    return {
+      type: "html",
+      value:
+        `<figure style="grid-column:${gridCol}/span ${gridSpan}">` +
+        `<div class="project__embed">` +
+        `<iframe src="${iframeSrc}" title="${iframeTitle}" ` +
+        `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ` +
+        `referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe>` +
+        `</div>` +
+        figcaption +
+        `</figure>`,
+    };
+  }
+
+  const prefixedUrl = withBasePublicPath(mainUrl, baseWithSlash) ?? mainUrl;
+  const src = escapeAttr(prefixedUrl);
 
   const mainPrefixed = withBasePublicPath(mainUrl, baseWithSlash) ?? mainUrl;
   let pool = cyclePaths.length ? [...cyclePaths] : [];

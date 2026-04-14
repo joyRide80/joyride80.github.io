@@ -4,6 +4,7 @@ import mdx from "@astrojs/mdx";
 import { withBasePublicPath } from "./src/lib/withBasePublicPath.js";
 import { remarkPrefixPublicImages } from "./src/lib/remarkPrefixPublicImages.mjs";
 import { remarkProjectContentCollage } from "./src/lib/remarkProjectContentCollage.mjs";
+import { rehypeYouTubeImagesAsEmbeds } from "./src/lib/rehypeYouTubeImagesAsEmbeds.mjs";
 
 const base = "/";
 
@@ -49,7 +50,7 @@ export default defineConfig({
       remarkPrefixPublicImages(base),
       remarkProjectContentCollage({ baseWithSlash: base }),
     ],
-    rehypePlugins: [rehypePrefixBaseAssets],
+    rehypePlugins: [rehypePrefixBaseAssets, rehypeYouTubeImagesAsEmbeds()],
     shikiConfig: {
       theme: "github-light",
     },

@@ -1,7 +1,7 @@
 ---
 title: "Beagle"
 headline: "Beagle"
-subtitle: "Creating More Compelling Proposals, Faster"
+subtitle: "Scaling Agency Growth through Modular Design"
 year: "2014-2015"
 url: ""
 tags:
@@ -10,32 +10,26 @@ tags:
   - "User interview"
   - "Visual design"
   - "UI design"
-category: "SaaS"
-introduction: "Beagle is an online proposal writing tool designed and crafted specifically for digital agencies. Beagle provides a way to create, share, revise and send beautiful proposals easily."
+category: "SaaS, Productivity"
+introduction: "Beagle is a specialized online proposal tool built to help digital agencies create, share, and revise high-quality proposals with speed and precision. The project addressed a major industry pain point: the tedious, repetitive nature of proposal writing. By leveraging the Podio platform, we aimed to transform a fragmented workflow into a unified, browser-based experience that balances professional aesthetics with collaborative efficiency."
 order: 2
-thumbnail: "/images/projects/beagle/sculpture.jpg"
+thumbnail: "/images/projects/beagle/beagle-print.png"
 heroImages:
-  - src: "/images/projects/beagle/logo-sketch.png"
-    caption: ""
-    size: "large"
-  - src: "/images/projects/beagle/overview-screen.png"
-    caption: ""
-    size: "large"
-  - src: "/images/projects/beagle/sculpture.jpg"
-    caption: ""
-    size: "small"
+  - size: "full"
+    src: "/images/projects/beagle/office_bg.png"
+    overlayVideo: "/images/projects/beagle/beagle-video.mp4"
+    overlayVideoWidth: "60%" # You can tweak this string (e.g., "50%", "800px")
 timelineImage: 2
 timelineAspect: 0.8
 ---
 
-## Background
+## Role & Strategy
 
-Around October 2014, some of the existing Podio team, including me, started a small project technically built on Podio Platform. It took a couple of months before we came up with Beagle. Creating Beagle from scratch requires a lot of research and brainstorming. We arranged numerous interviews with digital agencies in Copenhagen and London. We also performed qualitative and quantitative user testing to understand our target users.
+As a Product Designer, I was part of the core team that built Beagle from the ground up. I conducted extensive user research and interviews with agencies in Copenhagen and London to identify common content patterns. Based on these insights, I designed a **Modular Design Concept** using reusable content blocks, allowing teams to assemble complex documents effortlessly. My role spanned the entire design lifecycle—from initial brainstorming and brand naming to creating high-fidelity prototypes of the four key system screens: **Overview, Detail, Section Library, and Design Studio.**
 
-<figure>
-  <img src="/images/projects/beagle/sculpture.jpg" alt="Paper sculpture on desk for the pre-launch event" />
-  <figcaption>We later decided on the name Beagle, so I made this origami beagle for the pre-launch event. I made this paper sculpture in an abstract form since we didn't yet know what the product would be.</figcaption>
-</figure>
+![|span:1|col:2](/images/projects/beagle/logo-sketch.png)
+
+![|span:1|col:3](/images/projects/beagle/beagle-print.png)
 
 ## Modular design concept
 
@@ -43,26 +37,18 @@ Writing a proposal is a tedious activity. Agencies send out several proposals pe
 
 ## How Beagle works
 
-<figure>
-  <div class="project__embed">
-    <iframe
-      src="https://www.youtube.com/embed/opZS-Rxb-NU?si=omK2ID_aHGkqmR8Y"
-      title="YouTube video player"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      referrerpolicy="strict-origin-when-cross-origin"
-      allowfullscreen
-      loading="lazy"
-    ></iframe>
-  </div>
-  <figcaption>This short video gives a quick introduction to some of Beagle’s essential features</figcaption>
-</figure>
+![Beagle’s overview|span:3|col:2](/images/projects/beagle/overview.png)
 
 There are four main screens in Beagle: an overview where writers collaborate and see proposal statuses; a detail view for focusing on the proposal body; a section library for picking or replacing blocks; and a design studio for refining the look and feel of the finished proposal.
 
-![The four key screens](/images/projects/beagle/four-screens.png)
+![Detail view|span:2|col:1](/images/projects/beagle/proposal-view.png)
 
-![Overview screen](/images/projects/beagle/overview-screen.png)
+![Detail view with comment|span:2|col:3](/images/projects/beagle/collaboration.png)
 
-![Section screen](/images/projects/beagle/section-screen.png)
+![Detail view with suggestion|span:2|col:1](/images/projects/beagle/section-suggestion.png)
 
-![Design studio screen](/images/projects/beagle/design-studio.png)
+![Section library|span:2|col:3](/images/projects/beagle/replace-overlay.png)
+
+![|span:1|col:1](/images/projects/beagle/booklet.png)
+
+![Design studio screen|span:3|col:2](/images/projects/beagle/design-studio.png)
