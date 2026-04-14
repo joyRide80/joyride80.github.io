@@ -774,8 +774,11 @@ ol {
   line-height: 16px;
   color: var(--gray-900);
   text-align: center;
-  text-transform: uppercase;
-  width: 158px;
+  text-transform: none;
+  /* Shrink-wrap copy so parens sit tight; cap width so each phrase can stay one line */
+  width: max-content;
+  max-width: min(22rem, calc(100vw - 6.5rem));
+  flex-shrink: 1;
 }
 
 /* ---------- Component: Intro Slogan Overlay ---------- */
@@ -799,9 +802,9 @@ ol {
   color: var(--gray-900);
   text-align: center;
   width: 100%;
-  max-width: 710px;
+  max-width: min(960px, calc(100vw - 2 * var(--page-padding)));
   padding: 0 var(--page-padding);
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .cloud__item {
@@ -913,10 +916,6 @@ ol {
 
 .timeline__item--dimmed {
   opacity: 0.2;
-}
-
-.timeline__item.is-cycling {
-  box-shadow: 0 0 0 2px var(--gray-900);
 }
 
 .timeline__item.is-cycling img {
@@ -1614,7 +1613,8 @@ video.project__collage-overlay-video {
   .slogan__text {
     font-size: 12px;
     line-height: 14px;
-    width: 130px;
+    width: max-content;
+    max-width: min(19rem, calc(100vw - 5rem));
   }
 
   .slogan__paren {

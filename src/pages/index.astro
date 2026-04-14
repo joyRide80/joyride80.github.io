@@ -46,7 +46,7 @@ const baseUrl = import.meta.env.BASE_URL;
 
     <!-- Intro Slogan Overlay -->
     <div class="intro-slogan" id="intro-slogan" aria-hidden="true">
-      <p class="intro-slogan__text" id="intro-slogan-text">DESIGNING WITH CODE, BUILDING WITH PURPOSE.</p>
+      <p class="intro-slogan__text" id="intro-slogan-text">Designing with Code,<br/>Building with Purpose.</p>
     </div>
 
     <!-- Cloud View -->
@@ -59,7 +59,7 @@ const baseUrl = import.meta.env.BASE_URL;
     <!-- Slogan (Figma node 2110:481) -->
     <div class="slogan" id="slogan">
       <span class="slogan__paren slogan__paren--left">(</span>
-      <span class="slogan__text" id="slogan-text">DESIGNING WITH CODE,BUILDING WITH PURPOSE.</span>
+      <span class="slogan__text" id="slogan-text">Designing with Code,<br/>Building with Purpose.</span>
       <span class="slogan__paren slogan__paren--right">)</span>
     </div>
 
@@ -107,6 +107,10 @@ const baseUrl = import.meta.env.BASE_URL;
         timelineImage: p.data.timelineImage,
         timelineAspect: p.data.timelineAspect,
         timelineCycle: p.data.timelineCycle,
+        timelineCycleImages:
+          p.data.timelineCycleImages?.map(
+            (u) => withBasePublicPath(u, baseUrl) ?? u,
+          ) ?? [],
         timelineVideoEmbed: p.data.timelineVideoEmbed,
         timelineVideoPoster: p.data.timelineVideoPoster
           ? withBasePublicPath(p.data.timelineVideoPoster, baseUrl) ??

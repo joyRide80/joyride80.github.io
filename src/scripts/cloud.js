@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ============================================================
   const preloadedImages = new Map();
 
+  /** Hero `src`s + thumbnail + `timelineCycleImages` (deduped). */
   function getProjectImagePool(project) {
     const pool = [];
     if (project.heroImages?.length) {
@@ -63,12 +64,53 @@ document.addEventListener("DOMContentLoaded", () => {
     if (normalizedThumb && !pool.includes(normalizedThumb)) {
       pool.push(normalizedThumb);
     }
+    if (project.timelineCycleImages?.length) {
+      project.timelineCycleImages.forEach((u) => {
+        const n = normalizeAssetPath(u);
+        if (n && !pool.includes(n)) pool.push(n);
+      });
+    }
     return pool;
+  }
+
+  /**
+   * URLs used for timeline strip cycling + preload for that strip.
+   * When `timelineImage` is `-1` (thumbnail tile), hero collage `src`s are omitted so only
+   * `thumbnail` and `timelineCycleImages` participate.
+   */
+  function getTimelineStripMediaPool(project) {
+    const idx = project.timelineImage ?? 0;
+    if (idx === -1) {
+      const pool = [];
+      const thumb = normalizeAssetPath(project.thumbnail);
+      if (thumb) pool.push(thumb);
+      if (project.timelineCycleImages?.length) {
+        project.timelineCycleImages.forEach((u) => {
+          const n = normalizeAssetPath(u);
+          if (n && !pool.includes(n)) pool.push(n);
+        });
+      }
+      return pool;
+    }
+    return getProjectImagePool(project);
+  }
+
+  /** Stills only — timeline `<img>` swap (see `getTimelineCycleVideoPool`). */
+  function getTimelineCycleImagePool(project) {
+    return getTimelineStripMediaPool(project).filter(
+      (src) => !isVideoAssetPath(src),
+    );
+  }
+
+  function getTimelineCycleVideoPool(project) {
+    return getTimelineStripMediaPool(project).filter((src) =>
+      isVideoAssetPath(src),
+    );
   }
 
   function preloadAllProjectImages() {
     projects.forEach((project) => {
-      const pool = getProjectImagePool(project);
+      const pool = getTimelineCycleImagePool(project);
       pool.forEach((src) => {
         if (isVideoAssetPath(src)) return;
         if (!preloadedImages.has(src)) {
@@ -413,10 +455,11 @@ document.addEventListener("DOMContentLoaded", () => {
       el.dataset.slug = project.slug;
       el._timelineTileW = tileW;
 
-      const imagePool = getProjectImagePool(project);
-      el._imagePool = imagePool;
       el._originalSrc = normalizeAssetPath(imgSrc);
-      el._autoCycle = !!project.timelineCycle;
+      el._autoCycle =
+        project.timelineCycle === true ||
+        project.timelineCycle === 1 ||
+        project.timelineCycle === "true";
 
       if (project.timelineVideoEmbed) {
         el.classList.add("timeline__item--video");
@@ -467,6 +510,11 @@ document.addEventListener("DOMContentLoaded", () => {
         el.style.height = `${provisionalH}px`;
         appendCoverMedia(el, imgSrc, project.title);
         bindTimelineCoverMediaResize(el);
+        const coverMedia = el.querySelector(":scope > img, :scope > video");
+        const vPool = getTimelineCycleVideoPool(project);
+        const iPool = getTimelineCycleImagePool(project);
+        el._imagePool =
+          coverMedia?.tagName === "VIDEO" && vPool.length >= 2 ? vPool : iPool;
       }
 
       el.addEventListener("mouseenter", () => handleTimelineHover(project, el));
@@ -479,9 +527,11 @@ document.addEventListener("DOMContentLoaded", () => {
       timelineTrack.appendChild(el);
     });
 
-    // Start always-on cycling for flagged items
-    timelineTrack.querySelectorAll(".timeline__item").forEach((el) => {
-      if (el._autoCycle) startTimelineCycle(el);
+    // Start always-on cycling after layout (pool depends on cover media type)
+    requestAnimationFrame(() => {
+      timelineTrack.querySelectorAll(".timeline__item").forEach((el) => {
+        if (el._autoCycle) startTimelineCycle(el);
+      });
     });
   }
 
@@ -504,18 +554,30 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!pool || pool.length < 2) return;
     if (el.classList.contains("timeline__item--video")) return;
 
-    const imgEl = el.querySelector("img");
-    if (!imgEl) return;
+    const mediaEl = el.querySelector(":scope > img, :scope > video");
+    if (!mediaEl) return;
+
+    const isVideo = mediaEl.tagName === "VIDEO";
 
     let cycleIndex = pool.indexOf(el._originalSrc);
     if (cycleIndex === -1) cycleIndex = 0;
 
+    const onMediaReady = () => syncTimelineCoverMediaSize(el);
+
     el._cycleInterval = setInterval(() => {
       cycleIndex = (cycleIndex + 1) % pool.length;
-      imgEl.src = pool[cycleIndex];
-      imgEl.addEventListener("load", () => syncTimelineCoverMediaSize(el), {
-        once: true,
-      });
+      const next = pool[cycleIndex];
+      if (isVideo) {
+        mediaEl.src = next;
+        mediaEl.addEventListener("loadedmetadata", onMediaReady, {
+          once: true,
+        });
+        if (mediaEl.readyState >= 1) onMediaReady();
+      } else {
+        mediaEl.src = next;
+        mediaEl.addEventListener("load", onMediaReady, { once: true });
+        if (mediaEl.complete && mediaEl.naturalWidth) onMediaReady();
+      }
     }, 280);
     el.classList.add("is-cycling");
   }
@@ -527,18 +589,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     el.classList.remove("is-cycling");
     if (el._originalSrc && !el.classList.contains("timeline__item--video")) {
-      const imgEl = el.querySelector("img");
-      if (imgEl) {
-        imgEl.src = el._originalSrc;
-        imgEl.addEventListener("load", () => syncTimelineCoverMediaSize(el), {
-          once: true,
-        });
-        if (imgEl.complete && imgEl.naturalWidth) {
-          syncTimelineCoverMediaSize(el);
+      const mediaEl = el.querySelector(":scope > img, :scope > video");
+      if (mediaEl) {
+        mediaEl.src = el._originalSrc;
+        if (mediaEl.tagName === "VIDEO") {
+          mediaEl.addEventListener(
+            "loadedmetadata",
+            () => syncTimelineCoverMediaSize(el),
+            { once: true },
+          );
+          if (mediaEl.readyState >= 1) syncTimelineCoverMediaSize(el);
+        } else {
+          mediaEl.addEventListener(
+            "load",
+            () => syncTimelineCoverMediaSize(el),
+            { once: true },
+          );
+          if (mediaEl.complete && mediaEl.naturalWidth) {
+            syncTimelineCoverMediaSize(el);
+          }
         }
-      } else {
-        const vid = el.querySelector(":scope > video");
-        if (vid) vid.src = el._originalSrc;
       }
     }
   }
@@ -818,92 +888,129 @@ document.addEventListener("DOMContentLoaded", () => {
       sessionStorage.setItem(INTRO_KEY, "1");
 
       gsap.set(introSlogan, { opacity: 1 });
+      gsap.set(introSloganText, { opacity: 1 });
 
-      const split = SplitText.create(introSloganText, {
-        type: "lines, chars",
-        linesClass: "intro-line",
-        charsClass: "intro-char",
-      });
+      const runIntroAfterFonts = () => {
+        requestAnimationFrame(() => {
+          const split = SplitText.create(introSloganText, {
+            type: "words,lines",
+            linesClass: "intro-line",
+            mask: "lines",
+            autoSplit: true,
+          });
 
-      gsap.set(split.lines, { opacity: 0, y: 20 });
+          gsap.set(split.lines, { transformOrigin: "50% 100%" });
 
-      // Phase 1 - animate text in staggered by line
-      tl.to(split.lines, {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        stagger: 0.15,
-        ease: "power2.out",
-      });
+          const lines = split.lines;
+          const line1Duration = 0.65;
+          const line2Duration = 1.05;
+          const pauseAfterLine1 = 0.22;
 
-      // Phase 2 - brief hold, then fade out text
-      tl.to(
-        split.lines,
-        {
-          opacity: 0,
-          y: -20,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: "power2.inOut",
-        },
-        "+=0.8",
-      );
+          // Line 1 — baseline speed
+          if (lines[0]) {
+            tl.from(lines[0], {
+              duration: line1Duration,
+              yPercent: 100,
+              opacity: 0,
+              ease: "expo.out",
+            });
+          }
+          // Line 2 — starts after a beat, reveals more slowly
+          if (lines[1]) {
+            tl.from(
+              lines[1],
+              {
+                duration: line2Duration,
+                yPercent: 100,
+                opacity: 0,
+                ease: "expo.out",
+              },
+              `>${pauseAfterLine1}`,
+            );
+          }
+          for (let i = 2; i < lines.length; i++) {
+            tl.from(
+              lines[i],
+              {
+                duration: 0.75,
+                yPercent: 100,
+                opacity: 0,
+                ease: "expo.out",
+              },
+              ">0.1",
+            );
+          }
 
-      // Phase 3 - fade out the overlay itself
-      tl.to(introSlogan, {
-        opacity: 0,
-        duration: 0.3,
-        ease: "power2.out",
-      });
+          // Brief hold, then fade all lines out together
+          tl.to(
+            split.lines,
+            {
+              opacity: 0,
+              duration: 0.55,
+              ease: "power2.inOut",
+            },
+            "+=0.65",
+          );
 
-      // Cleanup
-      tl.call(() => split.revert());
+          tl.to(introSlogan, {
+            opacity: 0,
+            duration: 0.35,
+            ease: "power2.out",
+          });
 
-      const revealLabel = "revealSite";
-      tl.addLabel(revealLabel);
+          tl.call(() => split.revert());
 
-      tl.to(
-        [logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean),
-        {
-          opacity: 1,
-          duration: 0.6,
-          ease: "power2.out",
-        },
-        revealLabel,
-      );
-      tl.to(
-        group1,
-        {
-          opacity: 0.4,
-          scale: 1,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.04,
-        },
-        `${revealLabel}+=0.1`,
-      );
-      tl.to(
-        group2,
-        {
-          opacity: 0.4,
-          scale: 1,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.04,
-        },
-        "-=0.45",
-      );
-      tl.to(
-        group3,
-        {
-          opacity: 0.4,
-          scale: 1,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.04,
-        },
-        "-=0.4",
-      );
+          const revealLabel = "revealSite";
+          tl.addLabel(revealLabel);
+
+          tl.to(
+            [logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean),
+            {
+              opacity: 1,
+              duration: 0.6,
+              ease: "power2.out",
+            },
+            revealLabel,
+          );
+          tl.to(
+            group1,
+            {
+              opacity: 0.4,
+              scale: 1,
+              duration: 0.6,
+              ease: "power2.out",
+              stagger: 0.04,
+            },
+            `${revealLabel}+=0.1`,
+          );
+          tl.to(
+            group2,
+            {
+              opacity: 0.4,
+              scale: 1,
+              duration: 0.6,
+              ease: "power2.out",
+              stagger: 0.04,
+            },
+            "-=0.45",
+          );
+          tl.to(
+            group3,
+            {
+              opacity: 0.4,
+              scale: 1,
+              duration: 0.6,
+              ease: "power2.out",
+              stagger: 0.04,
+            },
+            "-=0.4",
+          );
+
+          tl.play();
+        });
+      };
+
+      document.fonts.ready.then(runIntroAfterFonts);
     } else {
       tl.to([logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean), {
         opacity: 1,
@@ -945,11 +1052,12 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    // Wait for fonts to avoid layout bugs
-    document.fonts.ready.then(() => {
-      // Short delay to let browser paint
-      requestAnimationFrame(() => tl.play());
-    });
+    // First-visit intro splits after fonts load and calls tl.play() there
+    if (!(isFirstVisit && introSlogan && introSloganText)) {
+      document.fonts.ready.then(() => {
+        requestAnimationFrame(() => tl.play());
+      });
+    }
   }
 
   // ============================================================
@@ -967,6 +1075,7 @@ document.addEventListener("DOMContentLoaded", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       renderCloud();
+      renderTimeline();
       if (activeView === "timeline") scrollTimelineToEnd();
     }, 250);
   });
