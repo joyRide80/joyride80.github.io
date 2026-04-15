@@ -80,7 +80,7 @@ Global sizing rules live in `src/styles/global.css` (`.project__collage`, `.proj
 
 ## Home timeline (frontmatter)
 
-On the index **Timeline** view, each project tile can cycle stills when **`timelineCycle: true`** (default is `false`). Set **`timelineCycleImages`** to an optional list of image URLs (same `/images/...` style as elsewhere). Duplicates are skipped. **Video URLs are ignored** when the tile uses an `<img>` (the strip swaps `src` on that element). **Pool rules:** if **`timelineImage: -1`** (thumbnail as the tile), the cycle pool is only **`thumbnail` + `timelineCycleImages`** — hero collage `src` URLs are not included. For other `timelineImage` indices, the pool is hero `src`s, then `thumbnail` if missing, then `timelineCycleImages`. Example: `src/content/projects/beagle.md`.
+On the index **Timeline** view, each project tile shows a single still or video from **`timelineImage`** (index into **`heroImages`**, or **`-1`** to use **`thumbnail`**). See `src/scripts/cloud.js` `renderTimeline`.
 
 ---
 

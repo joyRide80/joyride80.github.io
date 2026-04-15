@@ -889,10 +889,6 @@ ol {
   opacity: 0.2;
 }
 
-.timeline__item.is-cycling img {
-  transition: none;
-}
-
 .is-auto-cycling img,
 img[data-cycle] {
   transition: none;
@@ -1265,8 +1261,8 @@ video.project__collage-overlay-video {
   min-height: 100vh;
   padding: 20px var(--page-padding) 96px;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  column-gap: 24px;
+  grid-template-columns: 1fr;
+  gap: 0;
 }
 
 .about__left-col {
@@ -1274,8 +1270,8 @@ video.project__collage-overlay-video {
   display: flex;
   flex-direction: column;
   align-self: start;
-  position: sticky;
-  top: 20px;
+  position: relative;
+  top: auto;
   z-index: 10;
 }
 
@@ -1301,26 +1297,32 @@ video.project__collage-overlay-video {
 }
 
 .about__portrait-wrap {
-  grid-column: 2 / span 2;
+  grid-column: 1;
   align-self: start;
   max-width: 100%;
-  position: sticky;
-  top: 50vh;
-  transform: translateY(-50%);
+  position: relative;
+  top: auto;
+  transform: none;
+  width: min(100%, 280px);
+  margin: 24px 0;
+  justify-self: center;
 }
 
 .about__portrait {
+  width: 100%;
+  height: auto;
   transform: rotate(-4deg);
   border-radius: 4px;
 }
 
 .about__right {
-  grid-column: 4 / span 2;
-  margin-top: 100px;
+  grid-column: 1;
+  margin-top: 0;
   max-width: 100%;
 }
 
 .about__ascii {
+  display: none;
   margin-bottom: 32px;
   color: var(--gray-900);
 }
@@ -1336,8 +1338,8 @@ video.project__collage-overlay-video {
 
 .about__body p {
   font-family: var(--font-body);
-  font-size: 21px;
-  line-height: 32px;
+  font-size: clamp(18px, 0.33vw + 16.7px, 21px);
+  line-height: clamp(28px, 0.44vw + 26.3px, 32px);
   margin-bottom: 24px;
 }
 
@@ -1347,11 +1349,73 @@ video.project__collage-overlay-video {
   text-decoration-color: var(--gray-600);
 }
 
+.about__section-label {
+  font-family: var(--font-mono);
+  font-size: clamp(13px, 0.11vw + 12.6px, 14px);
+  font-weight: 400;
+  line-height: 25px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--gray-600);
+  margin-top: 48px;
+  margin-bottom: 16px;
+}
+
+.about__education-intro {
+  margin-bottom: 24px;
+}
+
+.about__education-list {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 24px;
+}
+
+.about__education-item {
+  font-family: var(--font-body);
+  font-size: clamp(18px, 0.33vw + 16.7px, 21px);
+  line-height: clamp(28px, 0.44vw + 26.3px, 32px);
+  margin-bottom: 16px;
+}
+
 .about__cv-btn {
   margin-top: 32px;
 }
 
 /* ---------- Responsive ---------- */
+
+/* ---- About: Multi-column starts above 1024px ---- */
+@media (min-width: 1025px) {
+  .about {
+    grid-template-columns: repeat(5, 1fr);
+    column-gap: 24px;
+  }
+
+  .about__left-col {
+    grid-column: 1;
+    position: sticky;
+    top: 20px;
+  }
+
+  .about__portrait-wrap {
+    grid-column: 2 / span 2;
+    position: sticky;
+    top: 50vh;
+    transform: translateY(-50%);
+    width: 100%;
+    margin: 0;
+    justify-self: stretch;
+  }
+
+  .about__right {
+    grid-column: 4 / span 2;
+    margin-top: 100px;
+  }
+
+  .about__ascii {
+    display: block;
+  }
+}
 
 /* ---- XXL (≥ 1400px) ---- */
 @media (min-width: 1400px) {
@@ -1452,6 +1516,11 @@ video.project__collage-overlay-video {
     line-height: 34px;
   }
 
+  .about__education-item {
+    font-size: 23px;
+    line-height: 34px;
+  }
+
   .btn-dark {
     font-size: 20px;
     line-height: 32px;
@@ -1510,19 +1579,6 @@ video.project__collage-overlay-video {
 
   .project__collage-item--full {
     grid-column: 1 / -1;
-  }
-
-  .about {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .about__portrait-wrap {
-    grid-column: 2 / span 1;
-  }
-
-  .about__right {
-    grid-column: 3 / span 2;
-    margin-top: 40px;
   }
 }
 
@@ -1694,40 +1750,12 @@ video.project__collage-overlay-video {
   }
 
   /* -- About -- */
-  .about {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .about__left-col {
-    position: relative;
-    top: auto;
-  }
-
-  .about__nav {
-    flex-direction: row;
-  }
-
-  .about__portrait-wrap {
-    grid-column: 1;
-    position: relative;
-    top: auto;
-    transform: none;
-    max-width: 280px;
-    margin: 24px 0;
-    justify-self: center;
-  }
-
-  .about__right {
-    grid-column: 1;
-    margin-top: 0;
-  }
-
-  .about__ascii {
-    display: none;
-  }
-
   .about__body p {
+    font-size: 18px;
+    line-height: 28px;
+  }
+
+  .about__education-item {
     font-size: 18px;
     line-height: 28px;
   }

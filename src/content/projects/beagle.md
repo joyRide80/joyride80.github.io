@@ -20,13 +20,7 @@ heroImages:
     overlayVideo: "/images/projects/beagle/beagle-video.mp4"
     overlayVideoWidth: "60%" # You can tweak this string (e.g., "50%", "800px")
 timelineImage: -1
-timelineCycle: true
-timelineCycleImages:
-  - "/images/projects/beagle/beagle-print.png"
-  - "/images/projects/beagle/logo-sketch.png"
-  - "/images/projects/beagle/logo-black.png"
-  - "/images/projects/beagle/booklet.png"
-  - "/images/projects/beagle/sculpture.jpg"
+
 ---
 
 ## Role & Strategy

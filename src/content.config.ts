@@ -16,12 +16,9 @@ const projectsCollection = defineCollection({
     introduction: z.string().optional(),
     order: z.number(),
     thumbnail: z.string(),
-    /** Index into `heroImages` for the timeline tile, or `-1` for `thumbnail`. With `-1`, timeline cycle uses only thumbnail + `timelineCycleImages` (no hero `src`s). */
+    /** Index into `heroImages` for the timeline tile, or `-1` for `thumbnail`. */
     timelineImage: z.number().optional().default(0),
     timelineAspect: z.number().optional(),
-    timelineCycle: z.boolean().optional().default(false),
-    /** Extra stills for the timeline strip when `timelineCycle` is true (URLs need not appear in the MD body). */
-    timelineCycleImages: z.array(z.string()).optional(),
     heroImages: z
       .array(
         z

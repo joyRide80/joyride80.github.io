@@ -48,11 +48,25 @@ document.addEventListener("DOMContentLoaded", () => {
   let introFinished = false;
   /** Timeline DOM is built on first switch to timeline (saves bandwidth + main thread). */
   let timelineRendered = false;
+  /** Skip full cloud re-render on resize unless layout band changes (avoids canceling media fetches). */
+  let lastCloudLayoutBucket = null;
+  /** Skip timeline rebuild on resize unless tile width band changes. */
+  let lastTimelineTileBucket = null;
 
-  // ============================================================
-  // Image cycle effect — preloading & state
-  // ============================================================
-  const preloadedImages = new Map();
+  function cloudLayoutBucket() {
+    const w = window.innerWidth;
+    if (w < 768) return "m";
+    if (w < 1024) return "t";
+    if (w >= 1400) return "x";
+    return "d";
+  }
+
+  function timelineTileBucketPx() {
+    const w = window.innerWidth;
+    if (w < 768) return 140;
+    if (w >= 1400) return 220;
+    return 200;
+  }
 
   /**
    * Load Pantasia for SplitText metrics only — avoids document.fonts.ready (all faces).
@@ -73,77 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ]);
   }
 
-  /** Hero `src`s + thumbnail + `timelineCycleImages` (deduped). */
-  function getProjectImagePool(project) {
-    const pool = [];
-    if (project.heroImages?.length) {
-      project.heroImages.forEach((img) => {
-        if (img.src) pool.push(normalizeAssetPath(img.src));
-      });
-    }
-    const normalizedThumb = normalizeAssetPath(project.thumbnail);
-    if (normalizedThumb && !pool.includes(normalizedThumb)) {
-      pool.push(normalizedThumb);
-    }
-    if (project.timelineCycleImages?.length) {
-      project.timelineCycleImages.forEach((u) => {
-        const n = normalizeAssetPath(u);
-        if (n && !pool.includes(n)) pool.push(n);
-      });
-    }
-    return pool;
-  }
-
-  /**
-   * URLs used for timeline strip cycling + preload for that strip.
-   * When `timelineImage` is `-1` (thumbnail tile), hero collage `src`s are omitted so only
-   * `thumbnail` and `timelineCycleImages` participate.
-   */
-  function getTimelineStripMediaPool(project) {
-    const idx = project.timelineImage ?? 0;
-    if (idx === -1) {
-      const pool = [];
-      const thumb = normalizeAssetPath(project.thumbnail);
-      if (thumb) pool.push(thumb);
-      if (project.timelineCycleImages?.length) {
-        project.timelineCycleImages.forEach((u) => {
-          const n = normalizeAssetPath(u);
-          if (n && !pool.includes(n)) pool.push(n);
-        });
-      }
-      return pool;
-    }
-    return getProjectImagePool(project);
-  }
-
-  /** Stills only — timeline `<img>` swap (see `getTimelineCycleVideoPool`). */
-  function getTimelineCycleImagePool(project) {
-    return getTimelineStripMediaPool(project).filter(
-      (src) => !isVideoAssetPath(src),
-    );
-  }
-
-  function getTimelineCycleVideoPool(project) {
-    return getTimelineStripMediaPool(project).filter((src) =>
-      isVideoAssetPath(src),
-    );
-  }
-
-  /** Preload stills for timeline strip / cycling — call only when timeline is first opened. */
-  function preloadTimelineStripImages() {
-    projects.forEach((project) => {
-      const pool = getTimelineCycleImagePool(project);
-      pool.forEach((src) => {
-        if (isVideoAssetPath(src)) return;
-        if (!preloadedImages.has(src)) {
-          const img = new Image();
-          img.src = src;
-          preloadedImages.set(src, img);
-        }
-      });
-    });
-  }
-
   function firstNonVideoHeroSrc(project) {
     if (!project.heroImages?.length) return null;
     for (const img of project.heroImages) {
@@ -154,8 +97,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return null;
   }
 
-  /** Prefer stills in the cloud so we do not decode multiple autoplay loops on load. */
-  function resolveCloudCoverSrc(project, tileSrc) {
+  /**
+   * Prefer a still image over video for listing surfaces (cloud + timeline strip).
+   * Avoids heavy MP4 range requests on slow links when `thumbnail` or a hero is video.
+   */
+  function resolvePreferStillMedia(project, tileSrc) {
     const normalized = normalizeAssetPath(tileSrc);
     if (!isVideoAssetPath(tileSrc)) return normalized;
     const heroStill = firstNonVideoHeroSrc(project);
@@ -412,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
         el.style.transform = "scale(1)";
       }
 
-      const coverSrc = resolveCloudCoverSrc(item.project, item.src);
+      const coverSrc = resolvePreferStillMedia(item.project, item.src);
       appendCoverMedia(el, coverSrc, item.project.title, {
         autoplayVideo: false,
       });
@@ -499,22 +445,16 @@ document.addEventListener("DOMContentLoaded", () => {
     sorted.forEach((project) => {
       const idx = project.timelineImage ?? 0;
       const heroImages = project.heroImages?.length ? project.heroImages : [];
-      const imgSrc = normalizeAssetPath(
+      const rawPick =
         idx === -1
           ? project.thumbnail
-          : heroImages[idx]?.src || heroImages[0]?.src || project.thumbnail,
-      );
+          : heroImages[idx]?.src || heroImages[0]?.src || project.thumbnail;
+      const coverSrc = resolvePreferStillMedia(project, rawPick);
 
       const el = document.createElement("div");
       el.className = "timeline__item";
       el.dataset.slug = project.slug;
       el._timelineTileW = tileW;
-
-      el._originalSrc = normalizeAssetPath(imgSrc);
-      el._autoCycle =
-        project.timelineCycle === true ||
-        project.timelineCycle === 1 ||
-        project.timelineCycle === "true";
 
       const innerW = timelineInnerWidth(tileW);
       const provisionalInnerH = Math.round((innerW * 5) / 4);
@@ -525,13 +465,8 @@ document.addEventListener("DOMContentLoaded", () => {
       el.dataset.baseH = String(provisionalH);
       el.style.width = `${tileW}px`;
       el.style.height = `${provisionalH}px`;
-      appendCoverMedia(el, imgSrc, project.title);
+      appendCoverMedia(el, coverSrc, project.title, { autoplayVideo: false });
       bindTimelineCoverMediaResize(el);
-      const coverMedia = el.querySelector(":scope > img, :scope > video");
-      const vPool = getTimelineCycleVideoPool(project);
-      const iPool = getTimelineCycleImagePool(project);
-      el._imagePool =
-        coverMedia?.tagName === "VIDEO" && vPool.length >= 2 ? vPool : iPool;
 
       el.addEventListener("mouseenter", () => handleTimelineHover(project, el));
       el.addEventListener("mouseleave", handleTimelineLeave);
@@ -542,91 +477,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       timelineTrack.appendChild(el);
     });
-
-    // Start always-on cycling after layout (pool depends on cover media type)
-    requestAnimationFrame(() => {
-      timelineTrack.querySelectorAll(".timeline__item").forEach((el) => {
-        if (el._autoCycle) startTimelineCycle(el);
-      });
-    });
   }
 
-  // ============================================================
-  // Timeline: optional always-on image cycle (timelineCycle only)
-  // ============================================================
   function getTimelineMediaElements(el) {
     return Array.from(el.querySelectorAll(":scope > img, :scope > video"));
-  }
-
-  function startTimelineCycle(el) {
-    stopTimelineCycle(el);
-    const pool = el._imagePool;
-    if (!pool || pool.length < 2) return;
-
-    const mediaEl = el.querySelector(":scope > img, :scope > video");
-    if (!mediaEl) return;
-
-    const isVideo = mediaEl.tagName === "VIDEO";
-
-    let cycleIndex = pool.indexOf(el._originalSrc);
-    if (cycleIndex === -1) cycleIndex = 0;
-
-    const onMediaReady = () => syncTimelineCoverMediaSize(el);
-
-    el._cycleInterval = setInterval(() => {
-      cycleIndex = (cycleIndex + 1) % pool.length;
-      const next = pool[cycleIndex];
-      if (isVideo) {
-        mediaEl.src = next;
-        mediaEl.addEventListener("loadedmetadata", onMediaReady, {
-          once: true,
-        });
-        if (mediaEl.readyState >= 1) onMediaReady();
-      } else {
-        mediaEl.src = next;
-        mediaEl.addEventListener("load", onMediaReady, { once: true });
-        if (mediaEl.complete && mediaEl.naturalWidth) onMediaReady();
-      }
-    }, 280);
-    el.classList.add("is-cycling");
-  }
-
-  function stopTimelineCycle(el) {
-    if (el._cycleInterval) {
-      clearInterval(el._cycleInterval);
-      el._cycleInterval = null;
-    }
-    el.classList.remove("is-cycling");
-    if (el._originalSrc) {
-      const mediaEl = el.querySelector(":scope > img, :scope > video");
-      if (mediaEl) {
-        mediaEl.src = el._originalSrc;
-        if (mediaEl.tagName === "VIDEO") {
-          mediaEl.addEventListener(
-            "loadedmetadata",
-            () => syncTimelineCoverMediaSize(el),
-            { once: true },
-          );
-          if (mediaEl.readyState >= 1) syncTimelineCoverMediaSize(el);
-        } else {
-          mediaEl.addEventListener(
-            "load",
-            () => syncTimelineCoverMediaSize(el),
-            { once: true },
-          );
-          if (mediaEl.complete && mediaEl.naturalWidth) {
-            syncTimelineCoverMediaSize(el);
-          }
-        }
-      }
-    }
-  }
-
-  function stopAllTimelineCycles() {
-    if (!timelineTrack) return;
-    timelineTrack.querySelectorAll(".timeline__item").forEach((el) => {
-      stopTimelineCycle(el);
-    });
   }
 
   function handleTimelineHover(project, hoveredEl) {
@@ -664,9 +518,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleTimelineLeave() {
     const items = timelineTrack.querySelectorAll(".timeline__item");
     items.forEach((el) => {
-      if (!el._autoCycle) {
-        stopTimelineCycle(el);
-      }
       getTimelineMediaElements(el).forEach((m) => {
         gsap.to(m, {
           scale: 1,
@@ -814,8 +665,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ============================================================
   function ensureTimelineRendered() {
     if (timelineRendered || !timelineTrack) return;
-    preloadTimelineStripImages();
     renderTimeline();
+    lastTimelineTileBucket = timelineTileBucketPx();
     timelineRendered = true;
   }
 
@@ -840,7 +691,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const sloganEl = document.getElementById("slogan");
 
     if (view === "cloud") {
-      stopAllTimelineCycles();
       cloudView.style.display = "block";
       timelineView.classList.remove("is-active");
       gsap.fromTo(cloudView, { opacity: 0 }, { opacity: 1, duration: 0.4 });
@@ -852,11 +702,6 @@ document.addEventListener("DOMContentLoaded", () => {
       gsap.fromTo(timelineView, { opacity: 0 }, { opacity: 1, duration: 0.4 });
       scrollTimelineToEnd();
       if (sloganEl) gsap.to(sloganEl, { opacity: 0, duration: 0.3 });
-      requestAnimationFrame(() => {
-        timelineTrack?.querySelectorAll(".timeline__item").forEach((el) => {
-          if (el._autoCycle) startTimelineCycle(el);
-        });
-      });
     }
   }
 
@@ -911,136 +756,169 @@ document.addEventListener("DOMContentLoaded", () => {
       paused: true,
       onComplete: () => {
         introFinished = true;
+        try {
+          sessionStorage.setItem(INTRO_KEY, "1");
+        } catch {
+          /* private mode / quota */
+        }
       },
     });
 
-    if (isFirstVisit && introSlogan && introSloganText) {
-      sessionStorage.setItem(INTRO_KEY, "1");
+    /** Shared tail: reveal chrome + cloud after intro overlay. */
+    function addIntroRevealTweens(revealLabel) {
+      tl.addLabel(revealLabel);
+      tl.to(
+        [logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean),
+        {
+          opacity: 1,
+          duration: 0.6,
+          ease: "power2.out",
+        },
+        revealLabel,
+      );
+      tl.to(
+        group1,
+        {
+          opacity: 0.4,
+          scale: 1,
+          duration: 0.6,
+          ease: "power2.out",
+          stagger: 0.04,
+        },
+        `${revealLabel}+=0.1`,
+      );
+      tl.to(
+        group2,
+        {
+          opacity: 0.4,
+          scale: 1,
+          duration: 0.6,
+          ease: "power2.out",
+          stagger: 0.04,
+        },
+        "-=0.45",
+      );
+      tl.to(
+        group3,
+        {
+          opacity: 0.4,
+          scale: 1,
+          duration: 0.6,
+          ease: "power2.out",
+          stagger: 0.04,
+        },
+        "-=0.4",
+      );
+    }
 
+    if (isFirstVisit && introSlogan && introSloganText) {
       gsap.set(introSlogan, { opacity: 1 });
       gsap.set(introSloganText, { opacity: 1 });
 
       const runIntroAfterFonts = () => {
-        const split = SplitText.create(introSloganText, {
-          type: "words,lines",
-          linesClass: "intro-line",
-          mask: "lines",
-          autoSplit: true,
-        });
-
-        gsap.set(split.lines, { transformOrigin: "50% 100%" });
-
-        const lines = split.lines;
-        const line1Duration = 0.65;
-        const line2Duration = 1.05;
-        const pauseAfterLine1 = 0.22;
-
-        // Line 1 — baseline speed
-        if (lines[0]) {
-          tl.from(lines[0], {
-            duration: line1Duration,
-            yPercent: 100,
-            opacity: 0,
-            ease: "expo.out",
-          });
-        }
-        // Line 2 — starts after a beat, reveals more slowly
-        if (lines[1]) {
-          tl.from(
-            lines[1],
-            {
-              duration: line2Duration,
-              yPercent: 100,
-              opacity: 0,
-              ease: "expo.out",
-            },
-            `>${pauseAfterLine1}`,
-          );
-        }
-        for (let i = 2; i < lines.length; i++) {
-          tl.from(
-            lines[i],
-            {
-              duration: 0.75,
-              yPercent: 100,
-              opacity: 0,
-              ease: "expo.out",
-            },
-            ">0.1",
-          );
-        }
-
-        // Brief hold, then fade all lines out together
-        tl.to(
-          split.lines,
-          {
-            opacity: 0,
-            duration: 0.55,
-            ease: "power2.inOut",
-          },
-          "+=0.65",
-        );
-
-        tl.to(introSlogan, {
-          opacity: 0,
-          duration: 0.35,
-          ease: "power2.out",
-        });
-
-        tl.call(() => split.revert());
-
         const revealLabel = "revealSite";
-        tl.addLabel(revealLabel);
+        try {
+          const split = SplitText.create(introSloganText, {
+            type: "words,lines",
+            linesClass: "intro-line",
+            mask: "lines",
+            autoSplit: true,
+          });
 
-        tl.to(
-          [logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean),
-          {
-            opacity: 1,
-            duration: 0.6,
+          const lines = split.lines;
+          if (!lines?.length) {
+            split.revert();
+            throw new Error("SplitText produced no lines");
+          }
+
+          gsap.set(split.lines, { transformOrigin: "50% 100%" });
+
+          const line1Duration = 0.65;
+          const line2Duration = 1.05;
+          const pauseAfterLine1 = 0.22;
+
+          if (lines[0]) {
+            tl.from(lines[0], {
+              duration: line1Duration,
+              yPercent: 100,
+              opacity: 0,
+              ease: "expo.out",
+            });
+          }
+          if (lines[1]) {
+            tl.from(
+              lines[1],
+              {
+                duration: line2Duration,
+                yPercent: 100,
+                opacity: 0,
+                ease: "expo.out",
+              },
+              `>${pauseAfterLine1}`,
+            );
+          }
+          for (let i = 2; i < lines.length; i++) {
+            tl.from(
+              lines[i],
+              {
+                duration: 0.75,
+                yPercent: 100,
+                opacity: 0,
+                ease: "expo.out",
+              },
+              ">0.1",
+            );
+          }
+
+          tl.to(
+            split.lines,
+            {
+              opacity: 0,
+              duration: 0.55,
+              ease: "power2.inOut",
+            },
+            "+=0.65",
+          );
+
+          tl.to(introSlogan, {
+            opacity: 0,
+            duration: 0.35,
             ease: "power2.out",
-          },
-          revealLabel,
-        );
-        tl.to(
-          group1,
-          {
-            opacity: 0.4,
-            scale: 1,
-            duration: 0.6,
-            ease: "power2.out",
-            stagger: 0.04,
-          },
-          `${revealLabel}+=0.1`,
-        );
-        tl.to(
-          group2,
-          {
-            opacity: 0.4,
-            scale: 1,
-            duration: 0.6,
-            ease: "power2.out",
-            stagger: 0.04,
-          },
-          "-=0.45",
-        );
-        tl.to(
-          group3,
-          {
-            opacity: 0.4,
-            scale: 1,
-            duration: 0.6,
-            ease: "power2.out",
-            stagger: 0.04,
-          },
-          "-=0.4",
-        );
+          });
+
+          tl.call(() => split.revert());
+
+          addIntroRevealTweens(revealLabel);
+        } catch {
+          tl.fromTo(
+            introSloganText,
+            { opacity: 0, y: 24 },
+            { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" },
+          );
+          tl.to({}, { duration: 0.55 });
+          tl.to(introSloganText, {
+            opacity: 0,
+            duration: 0.45,
+            ease: "power2.in",
+          });
+          tl.to(
+            introSlogan,
+            { opacity: 0, duration: 0.35, ease: "power2.out" },
+            "<0.15",
+          );
+          addIntroRevealTweens(revealLabel);
+        }
 
         tl.play();
       };
 
-      waitForIntroDisplayFont(introSloganText).then(() => {
-        requestAnimationFrame(runIntroAfterFonts);
-      });
+      waitForIntroDisplayFont(introSloganText)
+        .then(() => {
+          requestAnimationFrame(runIntroAfterFonts);
+        })
+        .catch(() => {
+          requestAnimationFrame(runIntroAfterFonts);
+        });
     } else {
       tl.to([logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean), {
         opacity: 1,
@@ -1092,18 +970,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // Init
   // ============================================================
   renderCloud();
+  lastCloudLayoutBucket = cloudLayoutBucket();
   initDrag();
   playIntro();
 
-  // Recalculate on resize
+  // Recalculate on resize only when layout bands change (full re-render cancels in-flight video)
   let resizeTimer;
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      renderCloud();
+      const cloudBucket = cloudLayoutBucket();
+      if (cloudBucket !== lastCloudLayoutBucket) {
+        lastCloudLayoutBucket = cloudBucket;
+        renderCloud();
+      }
       if (timelineRendered) {
-        renderTimeline();
-        if (activeView === "timeline") scrollTimelineToEnd();
+        const tileBucket = timelineTileBucketPx();
+        if (tileBucket !== lastTimelineTileBucket) {
+          lastTimelineTileBucket = tileBucket;
+          renderTimeline();
+          if (activeView === "timeline") scrollTimelineToEnd();
+        }
       }
     }, 250);
   });
