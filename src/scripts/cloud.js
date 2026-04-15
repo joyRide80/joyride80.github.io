@@ -46,11 +46,32 @@ document.addEventListener("DOMContentLoaded", () => {
   let canvasStartX = 0;
   let currentCanvasX = 0;
   let introFinished = false;
+  /** Timeline DOM is built on first switch to timeline (saves bandwidth + main thread). */
+  let timelineRendered = false;
 
   // ============================================================
   // Image cycle effect — preloading & state
   // ============================================================
   const preloadedImages = new Map();
+
+  /**
+   * Load Pantasia for SplitText metrics only — avoids document.fonts.ready (all faces).
+   * Family is fixed: computed style can still report a fallback before Pantasia applies.
+   */
+  function waitForIntroDisplayFont(introTextEl) {
+    if (!introTextEl || typeof document.fonts?.load !== "function") {
+      return Promise.resolve();
+    }
+    const cs = getComputedStyle(introTextEl);
+    const weight = cs.fontWeight || "400";
+    const size = cs.fontSize || "56px";
+    const spec = `${weight} ${size} Pantasia`;
+    const timeoutMs = 700;
+    return Promise.race([
+      document.fonts.load(spec).catch(() => undefined),
+      new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+    ]);
+  }
 
   /** Hero `src`s + thumbnail + `timelineCycleImages` (deduped). */
   function getProjectImagePool(project) {
@@ -108,7 +129,8 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  function preloadAllProjectImages() {
+  /** Preload stills for timeline strip / cycling — call only when timeline is first opened. */
+  function preloadTimelineStripImages() {
     projects.forEach((project) => {
       const pool = getTimelineCycleImagePool(project);
       pool.forEach((src) => {
@@ -122,7 +144,35 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function appendCoverMedia(container, src, altText) {
+  function firstNonVideoHeroSrc(project) {
+    if (!project.heroImages?.length) return null;
+    for (const img of project.heroImages) {
+      if (img.src && !isVideoAssetPath(img.src)) {
+        return normalizeAssetPath(img.src);
+      }
+    }
+    return null;
+  }
+
+  /** Prefer stills in the cloud so we do not decode multiple autoplay loops on load. */
+  function resolveCloudCoverSrc(project, tileSrc) {
+    const normalized = normalizeAssetPath(tileSrc);
+    if (!isVideoAssetPath(tileSrc)) return normalized;
+    const heroStill = firstNonVideoHeroSrc(project);
+    if (heroStill) return heroStill;
+    const thumb = normalizeAssetPath(project.thumbnail);
+    if (thumb && !isVideoAssetPath(project.thumbnail)) return thumb;
+    return normalized;
+  }
+
+  /**
+   * @param {HTMLElement} container
+   * @param {string} src
+   * @param {string} altText
+   * @param {{ autoplayVideo?: boolean; imgLoading?: "lazy" | "eager" }} [opts]
+   */
+  function appendCoverMedia(container, src, altText, opts = {}) {
+    const autoplayVideo = opts.autoplayVideo !== false;
     const normalizedSrc = normalizeAssetPath(src);
     if (isVideoAssetPath(src)) {
       const v = document.createElement("video");
@@ -140,13 +190,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       v.src = normalizedSrc;
       v.muted = true;
-      v.loop = true;
+      v.loop = autoplayVideo;
       v.playsInline = true;
       v.setAttribute("playsinline", "");
-      v.autoplay = true;
+      v.preload = autoplayVideo ? "auto" : "metadata";
+      v.autoplay = autoplayVideo;
       if (altText) v.setAttribute("aria-label", altText);
       container.appendChild(v);
-      v.play().catch(() => {});
+      if (autoplayVideo) v.play().catch(() => {});
       return;
     }
     const img = document.createElement("img");
@@ -165,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     img.src = normalizedSrc;
     img.alt = altText || "";
-    img.loading = "lazy";
+    img.loading = opts.imgLoading || "lazy";
     container.appendChild(img);
   }
 
@@ -227,9 +278,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const clusterCX = centerX + Math.cos(angle) * radius;
       const clusterCY = centerY + Math.sin(angle) * radius * 0.6;
 
+      // Fewer tiles on larger viewports — faster decode + less main-thread work
       const imageCount = isMobile
         ? 1
-        : 2 + Math.floor(seededRandom(seed++) * 2);
+        : 1 + Math.floor(seededRandom(seed++) * 2);
       const baseSizes = [
         { w: 140, h: 140 },
         { w: 180, h: 180 },
@@ -360,7 +412,10 @@ document.addEventListener("DOMContentLoaded", () => {
         el.style.transform = "scale(1)";
       }
 
-      appendCoverMedia(el, item.src, item.project.title);
+      const coverSrc = resolveCloudCoverSrc(item.project, item.src);
+      appendCoverMedia(el, coverSrc, item.project.title, {
+        autoplayVideo: false,
+      });
 
       el.addEventListener("mouseenter", () => handleItemHover(item, el));
       el.addEventListener("mouseleave", handleItemLeave);
@@ -400,7 +455,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function syncTimelineCoverMediaSize(el) {
     const tileW = el._timelineTileW;
-    if (!tileW || el.classList.contains("timeline__item--video")) return;
+    if (!tileW) return;
     const media = el.querySelector(":scope > img, :scope > video");
     if (!media) return;
     let nw = 0;
@@ -461,61 +516,22 @@ document.addEventListener("DOMContentLoaded", () => {
         project.timelineCycle === 1 ||
         project.timelineCycle === "true";
 
-      if (project.timelineVideoEmbed) {
-        el.classList.add("timeline__item--video");
-
-        const embedWh =
-          typeof project.timelineAspect === "number" &&
-          project.timelineAspect > 0
-            ? project.timelineAspect
-            : 16 / 9;
-        const innerW = timelineInnerWidth(tileW);
-        const innerH = Math.max(1, Math.round(innerW / embedWh));
-        const outerH = capTimelineOuterHeight(
-          innerH + 2 * TIMELINE_ITEM_PADDING,
-        );
-        el.dataset.baseW = String(tileW);
-        el.dataset.baseH = String(outerH);
-        el.style.width = `${tileW}px`;
-        el.style.height = `${outerH}px`;
-
-        const posterEl = document.createElement("img");
-        posterEl.className = "timeline__video-poster";
-        posterEl.src = normalizeAssetPath(
-          project.timelineVideoPoster || imgSrc,
-        );
-        posterEl.alt = `${project.title} preview`;
-        posterEl.loading = "lazy";
-        el.appendChild(posterEl);
-
-        const videoEl = document.createElement("iframe");
-        videoEl.src = project.timelineVideoEmbed;
-        videoEl.title = `${project.title} preview`;
-        videoEl.allow = "autoplay; fullscreen; picture-in-picture";
-        videoEl.referrerPolicy = "strict-origin-when-cross-origin";
-        videoEl.setAttribute("allowfullscreen", "");
-        videoEl.addEventListener("load", () => {
-          el.classList.add("is-video-ready");
-        });
-        el.appendChild(videoEl);
-      } else {
-        const innerW = timelineInnerWidth(tileW);
-        const provisionalInnerH = Math.round((innerW * 5) / 4);
-        const provisionalH = capTimelineOuterHeight(
-          provisionalInnerH + 2 * TIMELINE_ITEM_PADDING,
-        );
-        el.dataset.baseW = String(tileW);
-        el.dataset.baseH = String(provisionalH);
-        el.style.width = `${tileW}px`;
-        el.style.height = `${provisionalH}px`;
-        appendCoverMedia(el, imgSrc, project.title);
-        bindTimelineCoverMediaResize(el);
-        const coverMedia = el.querySelector(":scope > img, :scope > video");
-        const vPool = getTimelineCycleVideoPool(project);
-        const iPool = getTimelineCycleImagePool(project);
-        el._imagePool =
-          coverMedia?.tagName === "VIDEO" && vPool.length >= 2 ? vPool : iPool;
-      }
+      const innerW = timelineInnerWidth(tileW);
+      const provisionalInnerH = Math.round((innerW * 5) / 4);
+      const provisionalH = capTimelineOuterHeight(
+        provisionalInnerH + 2 * TIMELINE_ITEM_PADDING,
+      );
+      el.dataset.baseW = String(tileW);
+      el.dataset.baseH = String(provisionalH);
+      el.style.width = `${tileW}px`;
+      el.style.height = `${provisionalH}px`;
+      appendCoverMedia(el, imgSrc, project.title);
+      bindTimelineCoverMediaResize(el);
+      const coverMedia = el.querySelector(":scope > img, :scope > video");
+      const vPool = getTimelineCycleVideoPool(project);
+      const iPool = getTimelineCycleImagePool(project);
+      el._imagePool =
+        coverMedia?.tagName === "VIDEO" && vPool.length >= 2 ? vPool : iPool;
 
       el.addEventListener("mouseenter", () => handleTimelineHover(project, el));
       el.addEventListener("mouseleave", handleTimelineLeave);
@@ -539,12 +555,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Timeline: optional always-on image cycle (timelineCycle only)
   // ============================================================
   function getTimelineMediaElements(el) {
-    if (el.classList.contains("timeline__item--video")) {
-      return [
-        el.querySelector(".timeline__video-poster"),
-        el.querySelector("iframe"),
-      ].filter(Boolean);
-    }
     return Array.from(el.querySelectorAll(":scope > img, :scope > video"));
   }
 
@@ -552,7 +562,6 @@ document.addEventListener("DOMContentLoaded", () => {
     stopTimelineCycle(el);
     const pool = el._imagePool;
     if (!pool || pool.length < 2) return;
-    if (el.classList.contains("timeline__item--video")) return;
 
     const mediaEl = el.querySelector(":scope > img, :scope > video");
     if (!mediaEl) return;
@@ -588,7 +597,7 @@ document.addEventListener("DOMContentLoaded", () => {
       el._cycleInterval = null;
     }
     el.classList.remove("is-cycling");
-    if (el._originalSrc && !el.classList.contains("timeline__item--video")) {
+    if (el._originalSrc) {
       const mediaEl = el.querySelector(":scope > img, :scope > video");
       if (mediaEl) {
         mediaEl.src = el._originalSrc;
@@ -611,6 +620,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     }
+  }
+
+  function stopAllTimelineCycles() {
+    if (!timelineTrack) return;
+    timelineTrack.querySelectorAll(".timeline__item").forEach((el) => {
+      stopTimelineCycle(el);
+    });
   }
 
   function handleTimelineHover(project, hoveredEl) {
@@ -796,6 +812,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // ============================================================
   // View switching
   // ============================================================
+  function ensureTimelineRendered() {
+    if (timelineRendered || !timelineTrack) return;
+    preloadTimelineStripImages();
+    renderTimeline();
+    timelineRendered = true;
+  }
+
   function scrollTimelineToEnd() {
     if (!timelineView) return;
     const apply = () => {
@@ -817,16 +840,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const sloganEl = document.getElementById("slogan");
 
     if (view === "cloud") {
+      stopAllTimelineCycles();
       cloudView.style.display = "block";
       timelineView.classList.remove("is-active");
       gsap.fromTo(cloudView, { opacity: 0 }, { opacity: 1, duration: 0.4 });
       if (sloganEl) gsap.to(sloganEl, { opacity: 1, duration: 0.3 });
     } else {
+      ensureTimelineRendered();
       cloudView.style.display = "none";
       timelineView.classList.add("is-active");
       gsap.fromTo(timelineView, { opacity: 0 }, { opacity: 1, duration: 0.4 });
       scrollTimelineToEnd();
       if (sloganEl) gsap.to(sloganEl, { opacity: 0, duration: 0.3 });
+      requestAnimationFrame(() => {
+        timelineTrack?.querySelectorAll(".timeline__item").forEach((el) => {
+          if (el._autoCycle) startTimelineCycle(el);
+        });
+      });
     }
   }
 
@@ -891,126 +921,126 @@ document.addEventListener("DOMContentLoaded", () => {
       gsap.set(introSloganText, { opacity: 1 });
 
       const runIntroAfterFonts = () => {
-        requestAnimationFrame(() => {
-          const split = SplitText.create(introSloganText, {
-            type: "words,lines",
-            linesClass: "intro-line",
-            mask: "lines",
-            autoSplit: true,
+        const split = SplitText.create(introSloganText, {
+          type: "words,lines",
+          linesClass: "intro-line",
+          mask: "lines",
+          autoSplit: true,
+        });
+
+        gsap.set(split.lines, { transformOrigin: "50% 100%" });
+
+        const lines = split.lines;
+        const line1Duration = 0.65;
+        const line2Duration = 1.05;
+        const pauseAfterLine1 = 0.22;
+
+        // Line 1 — baseline speed
+        if (lines[0]) {
+          tl.from(lines[0], {
+            duration: line1Duration,
+            yPercent: 100,
+            opacity: 0,
+            ease: "expo.out",
           });
-
-          gsap.set(split.lines, { transformOrigin: "50% 100%" });
-
-          const lines = split.lines;
-          const line1Duration = 0.65;
-          const line2Duration = 1.05;
-          const pauseAfterLine1 = 0.22;
-
-          // Line 1 — baseline speed
-          if (lines[0]) {
-            tl.from(lines[0], {
-              duration: line1Duration,
+        }
+        // Line 2 — starts after a beat, reveals more slowly
+        if (lines[1]) {
+          tl.from(
+            lines[1],
+            {
+              duration: line2Duration,
               yPercent: 100,
               opacity: 0,
               ease: "expo.out",
-            });
-          }
-          // Line 2 — starts after a beat, reveals more slowly
-          if (lines[1]) {
-            tl.from(
-              lines[1],
-              {
-                duration: line2Duration,
-                yPercent: 100,
-                opacity: 0,
-                ease: "expo.out",
-              },
-              `>${pauseAfterLine1}`,
-            );
-          }
-          for (let i = 2; i < lines.length; i++) {
-            tl.from(
-              lines[i],
-              {
-                duration: 0.75,
-                yPercent: 100,
-                opacity: 0,
-                ease: "expo.out",
-              },
-              ">0.1",
-            );
-          }
-
-          // Brief hold, then fade all lines out together
-          tl.to(
-            split.lines,
+            },
+            `>${pauseAfterLine1}`,
+          );
+        }
+        for (let i = 2; i < lines.length; i++) {
+          tl.from(
+            lines[i],
             {
+              duration: 0.75,
+              yPercent: 100,
               opacity: 0,
-              duration: 0.55,
-              ease: "power2.inOut",
+              ease: "expo.out",
             },
-            "+=0.65",
+            ">0.1",
           );
+        }
 
-          tl.to(introSlogan, {
+        // Brief hold, then fade all lines out together
+        tl.to(
+          split.lines,
+          {
             opacity: 0,
-            duration: 0.35,
-            ease: "power2.out",
-          });
+            duration: 0.55,
+            ease: "power2.inOut",
+          },
+          "+=0.65",
+        );
 
-          tl.call(() => split.revert());
-
-          const revealLabel = "revealSite";
-          tl.addLabel(revealLabel);
-
-          tl.to(
-            [logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean),
-            {
-              opacity: 1,
-              duration: 0.6,
-              ease: "power2.out",
-            },
-            revealLabel,
-          );
-          tl.to(
-            group1,
-            {
-              opacity: 0.4,
-              scale: 1,
-              duration: 0.6,
-              ease: "power2.out",
-              stagger: 0.04,
-            },
-            `${revealLabel}+=0.1`,
-          );
-          tl.to(
-            group2,
-            {
-              opacity: 0.4,
-              scale: 1,
-              duration: 0.6,
-              ease: "power2.out",
-              stagger: 0.04,
-            },
-            "-=0.45",
-          );
-          tl.to(
-            group3,
-            {
-              opacity: 0.4,
-              scale: 1,
-              duration: 0.6,
-              ease: "power2.out",
-              stagger: 0.04,
-            },
-            "-=0.4",
-          );
-
-          tl.play();
+        tl.to(introSlogan, {
+          opacity: 0,
+          duration: 0.35,
+          ease: "power2.out",
         });
+
+        tl.call(() => split.revert());
+
+        const revealLabel = "revealSite";
+        tl.addLabel(revealLabel);
+
+        tl.to(
+          [logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean),
+          {
+            opacity: 1,
+            duration: 0.6,
+            ease: "power2.out",
+          },
+          revealLabel,
+        );
+        tl.to(
+          group1,
+          {
+            opacity: 0.4,
+            scale: 1,
+            duration: 0.6,
+            ease: "power2.out",
+            stagger: 0.04,
+          },
+          `${revealLabel}+=0.1`,
+        );
+        tl.to(
+          group2,
+          {
+            opacity: 0.4,
+            scale: 1,
+            duration: 0.6,
+            ease: "power2.out",
+            stagger: 0.04,
+          },
+          "-=0.45",
+        );
+        tl.to(
+          group3,
+          {
+            opacity: 0.4,
+            scale: 1,
+            duration: 0.6,
+            ease: "power2.out",
+            stagger: 0.04,
+          },
+          "-=0.4",
+        );
+
+        tl.play();
       };
 
-      document.fonts.ready.then(runIntroAfterFonts);
+      waitForIntroDisplayFont(introSloganText).then(() => {
+        requestAnimationFrame(runIntroAfterFonts);
+      });
     } else {
       tl.to([logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean), {
         opacity: 1,
@@ -1052,20 +1082,16 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    // First-visit intro splits after fonts load and calls tl.play() there
+    // Repeat visits: do not wait on unrelated webfonts
     if (!(isFirstVisit && introSlogan && introSloganText)) {
-      document.fonts.ready.then(() => {
-        requestAnimationFrame(() => tl.play());
-      });
+      requestAnimationFrame(() => tl.play());
     }
   }
 
   // ============================================================
   // Init
   // ============================================================
-  preloadAllProjectImages();
   renderCloud();
-  renderTimeline();
   initDrag();
   playIntro();
 
@@ -1075,8 +1101,10 @@ document.addEventListener("DOMContentLoaded", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       renderCloud();
-      renderTimeline();
-      if (activeView === "timeline") scrollTimelineToEnd();
+      if (timelineRendered) {
+        renderTimeline();
+        if (activeView === "timeline") scrollTimelineToEnd();
+      }
     }, 250);
   });
 });

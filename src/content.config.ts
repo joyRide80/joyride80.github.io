@@ -22,8 +22,6 @@ const projectsCollection = defineCollection({
     timelineCycle: z.boolean().optional().default(false),
     /** Extra stills for the timeline strip when `timelineCycle` is true (URLs need not appear in the MD body). */
     timelineCycleImages: z.array(z.string()).optional(),
-    timelineVideoEmbed: z.string().optional(),
-    timelineVideoPoster: z.string().optional(),
     heroImages: z
       .array(
         z

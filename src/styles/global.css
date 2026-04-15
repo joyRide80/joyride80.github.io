@@ -880,35 +880,6 @@ ol {
   pointer-events: none;
 }
 
-.timeline__item iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-.timeline__item--video.is-video-ready iframe {
-  opacity: 1;
-}
-
-.timeline__video-poster {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
-
-.timeline__item--video.is-video-ready .timeline__video-poster {
-  opacity: 0;
-}
-
 .timeline__item--active {
   opacity: 1;
   z-index: 2;

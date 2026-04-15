@@ -111,11 +111,6 @@ const baseUrl = import.meta.env.BASE_URL;
           p.data.timelineCycleImages?.map(
             (u) => withBasePublicPath(u, baseUrl) ?? u,
           ) ?? [],
-        timelineVideoEmbed: p.data.timelineVideoEmbed,
-        timelineVideoPoster: p.data.timelineVideoPoster
-          ? withBasePublicPath(p.data.timelineVideoPoster, baseUrl) ??
-            p.data.timelineVideoPoster
-          : "",
         heroImages:
           p.data.heroImages?.map((img) => ({
             ...img,
