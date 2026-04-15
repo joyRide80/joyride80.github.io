@@ -1403,9 +1403,9 @@ video.project__collage-overlay-video {
     position: sticky;
     top: 50vh;
     transform: translateY(-50%);
-    width: 100%;
+    width: min(100%, 420px);
     margin: 0;
-    justify-self: stretch;
+    justify-self: center;
   }
 
   .about__right {
