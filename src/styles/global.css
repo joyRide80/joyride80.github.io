@@ -811,7 +811,7 @@ ol {
   position: absolute;
   border-radius: 4px;
   overflow: hidden;
-  opacity: 0;
+  opacity: 1;
   cursor: pointer;
 }
 
@@ -829,7 +829,7 @@ ol {
 }
 
 .cloud__item--dimmed {
-  opacity: 0.2;
+  opacity: 1;
 }
 
 .cloud__overlay {
@@ -856,7 +856,7 @@ ol {
 .timeline__track {
   display: flex;
   align-items: flex-start;
-  gap: 0;
+  gap: 4px;
   padding: 50vh 64px 0;
 }
 
@@ -869,7 +869,8 @@ ol {
   overflow: hidden;
   opacity: 1;
   cursor: pointer;
-  background-color: transparent;
+  background-color: #e1dfd7;
+  border-radius: 4px;
 }
 
 .timeline__item img,
@@ -1651,7 +1652,7 @@ video.project__collage-overlay-video {
 
   .timeline__track {
     padding: 40vh 20px 0;
-    gap: 0;
+    gap: 4px;
   }
 
   /* -- Project -- */

@@ -15,7 +15,11 @@ tags:
 category: "Edtech / Experimental Design"
 introduction: "Digital Science Teacher is an experimental mobile platform developed at MegaLearn to solve the problem of passive digital learning. Recognising that students often lose interest in static educational content, we developed a prototype that replaces long-form lessons with bite-sized, interactive mini-games and a conversational UI to keep learners engaged on their smartphones."
 order: 4
-thumbnail: "/images/projects/digital-science-teacher/digital_teacher_short.mp4"
+thumbnail: "/images/projects/digital-science-teacher/tiny_digital_teacher_short.mp4"
+thumbnailImages:
+  - "/images/projects/digital-science-teacher/tiny_digital_teacher_short.mp4"
+  - "/images/projects/digital-science-teacher/tiny_digitalScienceTeacher.png"
+  - "/images/projects/digital-science-teacher/tiny_app-screens.png"
 heroImages:
   - src: "/images/projects/digital-science-teacher/video_preview.png"
     size: "small"
@@ -24,7 +28,6 @@ heroImages:
     size: "small"
   - src: "/images/projects/digital-science-teacher/digitalScienceTeacher.png"
     size: "large"
-timelineImage: -1
 ---
 
 ## Role & Strategy

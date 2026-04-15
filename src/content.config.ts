@@ -15,10 +15,13 @@ const projectsCollection = defineCollection({
     category: z.string(),
     introduction: z.string().optional(),
     order: z.number(),
+    /** Legacy single image; used when `thumbnailImages` is omitted (OG, project header, fallback strip). */
     thumbnail: z.string(),
-    /** Index into `heroImages` for the timeline tile, or `-1` for `thumbnail`. */
-    timelineImage: z.number().optional().default(0),
-    timelineAspect: z.number().optional(),
+    /**
+     * Small assets for home Cloud (2–3 tiles cycle this pool) and Timeline (first entry).
+     * Prefer WebP/PNG/JPEG under ~400px wide; optional tiny MP4/GIF for motion (see docs/home-strip-media.md).
+     */
+    thumbnailImages: z.array(z.string()).optional(),
     heroImages: z
       .array(
         z

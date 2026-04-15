@@ -16,7 +16,10 @@ tags:
 category: "Climatetech, AI"
 introduction: "Klara is a carbon accounting platform designed for small businesses in Norway. Our clients wanted to create a more affordable solution, as existing options were too expensive for their target market. With the help of AI, we were able to build a more cost-effective solution."
 order: 6
-thumbnail: "/images/projects/klara/thumbnail.png"
+thumbnail: "/images/projects/klara/tiny_thumbnail.png"
+thumbnailImages:
+  - "/images/projects/klara/tiny_thumbnail.png"
+  - "/images/projects/klara/tiny_klaraGraph.png"
 heroImages:
   - src: "/images/projects/klara/klaraGraph.png"
     caption: ""
@@ -24,8 +27,6 @@ heroImages:
   - src: "/images/projects/klara/thumbnail.png"
     caption: ""
     size: "small"
-
-timelineImage: -1
 ---
 
 ## My Design Role
@@ -82,4 +83,3 @@ Our AI-powered system provided the necessary data to perform these calculations.
 ## Launch and outcome
 
 Klara launched its MVP in April 2024, allowing us to gather feedback from beta customers and make significant changes. We shifted our target user base from experts to regular users, requiring a major overhaul of the user interface to make it more user-friendly. This was a valuable learning experience, and we also had the opportunity to refine the approval process and integrate with additional accounting systems.
-

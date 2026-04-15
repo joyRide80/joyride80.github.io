@@ -78,9 +78,9 @@ Global sizing rules live in `src/styles/global.css` (`.project__collage`, `.proj
 
 ---
 
-## Home timeline (frontmatter)
+## Home strip: `thumbnailImages` (frontmatter)
 
-On the index **Timeline** view, each project tile shows a single still or video from **`timelineImage`** (index into **`heroImages`**, or **`-1`** to use **`thumbnail`**). See `src/scripts/cloud.js` `renderTimeline`.
+Optional **`thumbnailImages`**: array of `/images/...` URLs (still or tiny video). **Cloud** picks **2–3** entries per project (with variation). **Timeline** uses the **first** entry only. If omitted, the site uses **`thumbnail`**, then the first hero **`src`**. See `docs/home-strip-media.md` for sizes and video vs GIF.
 
 ---
 

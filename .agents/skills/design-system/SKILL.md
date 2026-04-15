@@ -276,6 +276,10 @@ tags:
 category: "Climatetech, AI"
 order: 1
 thumbnail: "/images/projects/klara/thumbnail.png"
+# Optional: small assets for home Cloud (2–3 per project) + Timeline (first only). See docs/home-strip-media.md
+thumbnailImages:
+  - "/images/projects/klara/thumbnail.png"
+  - "/images/projects/klara/cloud-1.png"
 cloudImages:
   - src: "/images/projects/klara/cloud-1.png"
     width: 2

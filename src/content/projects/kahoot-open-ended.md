@@ -12,7 +12,11 @@ tags:
 category: "Edtech"
 introduction: "Kahoot! is a global learning platform known for its fast-paced, multiple-choice games. To evolve the experience for its 1 billion annual players, we needed to move beyond pre-defined answers to support deeper knowledge assessment through a new Open-Ended question type."
 order: 5
-thumbnail: "/images/projects/kahoot/kahootLogo.png"
+thumbnail: "/images/projects/kahoot/tiny_kahootLogo.png"
+thumbnailImages:
+  - "/images/projects/kahoot/tiny_kahootLogo.png"
+  - "/images/projects/kahoot/tiny_thumbnail.png"
+  - "/images/projects/kahoot/tiny_slider.png"
 heroImages:
   - size: "small-split"
     splitImages:
@@ -24,7 +28,6 @@ heroImages:
   - src: "/images/projects/kahoot/slider.png"
     caption: ""
     size: "large"
-timelineImage: 1
 ---
 
 ## My Approach

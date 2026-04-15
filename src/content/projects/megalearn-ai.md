@@ -12,7 +12,11 @@ tags:
 category: "Edtech, AI"
 introduction: "Building a generative AI platform for education. Architected the design system and front-end using Three.js to create immersive 3D learning environments."
 order: 8
-thumbnail: "/images/projects/megalearn-ai/card.png"
+thumbnail: "/images/projects/megalearn-ai/tiny_card.png"
+thumbnailImages:
+  - "/images/projects/megalearn-ai/tiny_card.png"
+  - "/images/projects/megalearn-ai/tiny_desktop.png"
+  - "/images/projects/megalearn-ai/tiny_gameLevel.png"
 heroImages:
   - src: "/images/projects/megalearn-ai/desktop.png"
     size: "large"
@@ -20,7 +24,6 @@ heroImages:
     size: "large"
   - src: "/images/projects/megalearn-ai/cardFlip.mp4"
     size: "small"
-timelineImage: 0
 ---
 
 ## Overview

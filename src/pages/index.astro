@@ -4,6 +4,7 @@ import Header from "../components/Header.astro";
 import { getCollection } from "astro:content";
 import { compareProjectCollectionEntries } from "../lib/projectYear";
 import { withBasePublicPath } from "../lib/withBasePublicPath";
+import { homeStripImagePaths } from "../lib/homeStripImagePaths";
 
 const projects = (await getCollection("projects")).sort(
   compareProjectCollectionEntries,
@@ -104,8 +105,7 @@ const baseUrl = import.meta.env.BASE_URL;
         thumbnail: p.data.thumbnail
           ? withBasePublicPath(p.data.thumbnail, baseUrl) ?? p.data.thumbnail
           : "",
-        timelineImage: p.data.timelineImage,
-        timelineAspect: p.data.timelineAspect,
+        thumbnailImages: homeStripImagePaths(p.data, baseUrl),
         heroImages:
           p.data.heroImages?.map((img) => ({
             ...img,

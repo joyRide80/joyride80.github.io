@@ -13,6 +13,10 @@ category: "ServiceTech / HomeTech"
 introduction: "YOB is a mobile-first platform designed to simplify the process of hiring a plumber by offering fixed prices and a seamless booking experience. It solves the common frustrations of home maintenance: high price uncertainty and fragmented communication between homeowners and professionals."
 order: 7
 thumbnail: ""
+thumbnailImages:
+  - "/images/projects/klara/tiny_transaction-page.png"
+  - "/images/projects/klara/tiny_emission-page.png"
+  - "/images/projects/klara/tiny_thumbnail.png"
 heroImages:
   - src: "/images/projects/klara/transaction-page.png"
     caption: "Transaction page"
@@ -23,7 +27,6 @@ heroImages:
   - src: "/images/projects/klara/thumbnail.png"
     caption: "Klara brand"
     size: "small"
-timelineImage: 2
 ---
 
 ## My approach and results

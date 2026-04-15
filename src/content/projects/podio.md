@@ -13,7 +13,10 @@ tags:
 category: "Productivity, SaaS"
 introduction: "Podio is a flexible project management tool that empowers teams to build their own custom workflows. However, this high degree of customisation created significant friction for new users, who struggled to navigate the abstract hierarchy of organisations, workspaces, and Items. Data showed a concerning trend: despite the platform's power, users were creating fewer items due to a disconnected experience between data overviews and detailed content editing."
 order: 1
-thumbnail: "/images/projects/podio/thumbnail.png"
+thumbnail: "/images/projects/podio/tiny_thumbnail.png"
+thumbnailImages:
+  - "/images/projects/podio/tiny_thumbnail.png"
+  - "/images/projects/podio/tiny_relationship-diagram.png"
 
 heroImages:
   - src: "/images/projects/podio/thumbnail.png"
@@ -22,9 +25,6 @@ heroImages:
   - src: "/images/projects/podio/relationship-diagram.png"
     caption: ""
     size: "large"
-
-timelineImage: -1
-timelineAspect: 1.6
 ---
 
 ## Role & Strategy

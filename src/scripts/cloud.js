@@ -68,6 +68,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return 200;
   }
 
+  /** Drop IntersectionObservers on strip videos before DOM teardown. */
+  function disconnectStripVideoObservers(root) {
+    if (!root) return;
+    root.querySelectorAll("video").forEach((v) => {
+      if (v._stripVideoIo) {
+        v._stripVideoIo.disconnect();
+        v._stripVideoIo = null;
+      }
+    });
+  }
+
   /**
    * Load Pantasia for SplitText metrics only — avoids document.fonts.ready (all faces).
    * Family is fixed: computed style can still report a fallback before Pantasia applies.
@@ -87,38 +98,22 @@ document.addEventListener("DOMContentLoaded", () => {
     ]);
   }
 
-  function firstNonVideoHeroSrc(project) {
-    if (!project.heroImages?.length) return null;
-    for (const img of project.heroImages) {
-      if (img.src && !isVideoAssetPath(img.src)) {
-        return normalizeAssetPath(img.src);
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Prefer a still image over video for listing surfaces (cloud + timeline strip).
-   * Avoids heavy MP4 range requests on slow links when `thumbnail` or a hero is video.
-   */
-  function resolvePreferStillMedia(project, tileSrc) {
-    const normalized = normalizeAssetPath(tileSrc);
-    if (!isVideoAssetPath(tileSrc)) return normalized;
-    const heroStill = firstNonVideoHeroSrc(project);
-    if (heroStill) return heroStill;
-    const thumb = normalizeAssetPath(project.thumbnail);
-    if (thumb && !isVideoAssetPath(project.thumbnail)) return thumb;
-    return normalized;
-  }
-
   /**
    * @param {HTMLElement} container
    * @param {string} src
    * @param {string} altText
-   * @param {{ autoplayVideo?: boolean; imgLoading?: "lazy" | "eager" }} [opts]
+   * @param {{
+   *   autoplayVideo?: boolean;
+   *   imgLoading?: "lazy" | "eager";
+   *   imgFetchPriority?: "high" | "low" | "auto";
+   *   deferStripVideoUntilVisible?: boolean;
+   * }} [opts] deferStripVideoUntilVisible: default true — autoplay strip videos only while in view.
    */
   function appendCoverMedia(container, src, altText, opts = {}) {
     const autoplayVideo = opts.autoplayVideo !== false;
+    const deferStripVideo =
+      opts.deferStripVideoUntilVisible !== false &&
+      typeof IntersectionObserver === "function";
     const normalizedSrc = normalizeAssetPath(src);
     if (isVideoAssetPath(src)) {
       const v = document.createElement("video");
@@ -139,16 +134,45 @@ document.addEventListener("DOMContentLoaded", () => {
       v.loop = autoplayVideo;
       v.playsInline = true;
       v.setAttribute("playsinline", "");
-      v.preload = autoplayVideo ? "auto" : "metadata";
-      v.autoplay = autoplayVideo;
       if (altText) v.setAttribute("aria-label", altText);
       container.appendChild(v);
-      if (autoplayVideo) v.play().catch(() => {});
+
+      if (autoplayVideo && deferStripVideo) {
+        v.preload = "metadata";
+        v.autoplay = false;
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((ent) => {
+              if (ent.isIntersecting && ent.intersectionRatio >= 0.06) {
+                v.preload = "auto";
+                v.play().catch(() => {});
+              } else {
+                v.pause();
+              }
+            });
+          },
+          {
+            root: null,
+            rootMargin: "120px 0px 160px 0px",
+            threshold: [0, 0.06, 0.2],
+          },
+        );
+        io.observe(container);
+        v._stripVideoIo = io;
+      } else {
+        v.preload = autoplayVideo ? "auto" : "metadata";
+        v.autoplay = autoplayVideo;
+        if (autoplayVideo) v.play().catch(() => {});
+      }
       return;
     }
     const img = document.createElement("img");
     img.style.opacity = "0";
     img.style.transition = "opacity 0.4s ease";
+    img.decoding = "async";
+    if (opts.imgFetchPriority) {
+      img.fetchPriority = opts.imgFetchPriority;
+    }
     img.onload = () => {
       img.style.opacity = "1";
       setTimeout(() => {
@@ -186,6 +210,24 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  /** Dedupe strip URLs so the cloud never shows the same asset twice for one project. */
+  function dedupeHomeStripUrls(urls) {
+    const seen = new Set();
+    const out = [];
+    for (const u of urls) {
+      if (!u) continue;
+      const key = normalizeAssetPath(u);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(key);
+    }
+    return out;
+  }
+
+  /**
+   * Cloud layout: one ring slot per project; up to 2–3 tiles on desktop when the project has
+   * that many *distinct* `thumbnailImages` (1 on mobile). Each tile uses a different URL — no duplicates.
+   */
   function generateCloudPositions() {
     // Use actual cloud container bounds, not full viewport
     const containerRect = cloudCanvas
@@ -219,15 +261,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     projects.forEach((project, pIndex) => {
+      const pool = dedupeHomeStripUrls(project.thumbnailImages || []);
+      if (!pool.length) return;
+
       const angle = (pIndex / totalProjects) * Math.PI * 2 - Math.PI / 2;
       const radius = Math.min(viewW, viewH) * (isMobile ? 0.35 : 0.28);
       const clusterCX = centerX + Math.cos(angle) * radius;
       const clusterCY = centerY + Math.sin(angle) * radius * 0.6;
 
-      // Fewer tiles on larger viewports — faster decode + less main-thread work
-      const imageCount = isMobile
-        ? 1
-        : 1 + Math.floor(seededRandom(seed++) * 2);
+      const maxTilesDesktop = 2 + Math.floor(seededRandom(seed++) * 2);
+      const imageCount = isMobile ? 1 : Math.min(maxTilesDesktop, pool.length);
       const baseSizes = [
         { w: 140, h: 140 },
         { w: 180, h: 180 },
@@ -287,12 +330,11 @@ document.addEventListener("DOMContentLoaded", () => {
           Math.min(candidate.y, viewH - candidate.h - gap),
         );
 
+        const pick = pool[i];
         items.push({
           project,
           slug: project.slug,
-          src:
-            project.heroImages?.[i % (project.heroImages?.length || 1)]?.src ||
-            project.thumbnail,
+          src: pick,
           x: candidate.x,
           y: candidate.y,
           w: size.w,
@@ -338,10 +380,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // ============================================================
   function renderCloud() {
     if (!cloudCanvas) return;
+    disconnectStripVideoObservers(cloudCanvas);
     // Clear existing items (keep tagline)
     cloudCanvas.querySelectorAll(".cloud__item").forEach((el) => el.remove());
 
     const items = generateCloudPositions();
+
+    /** First tiles compete for LCP; rest defer to reduce Slow 4G contention. */
+    const cloudEagerTileCount = 12;
 
     items.forEach((item, i) => {
       const el = document.createElement("div");
@@ -354,13 +400,16 @@ document.addEventListener("DOMContentLoaded", () => {
       el.style.zIndex = String(i);
 
       if (introFinished) {
-        el.style.opacity = "0.4";
+        el.style.opacity = "1";
         el.style.transform = "scale(1)";
       }
 
-      const coverSrc = resolvePreferStillMedia(item.project, item.src);
-      appendCoverMedia(el, coverSrc, item.project.title, {
-        autoplayVideo: false,
+      const eager = i < cloudEagerTileCount;
+      appendCoverMedia(el, item.src, item.project.title, {
+        autoplayVideo: true,
+        deferStripVideoUntilVisible: true,
+        imgLoading: eager ? "eager" : "lazy",
+        imgFetchPriority: eager ? "high" : "low",
       });
 
       el.addEventListener("mouseenter", () => handleItemHover(item, el));
@@ -434,6 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderTimeline() {
     if (!timelineTrack) return;
+    disconnectStripVideoObservers(timelineTrack);
     timelineTrack.innerHTML = "";
 
     const sorted = [...projects].sort(compareProjectsChronological);
@@ -442,14 +492,15 @@ document.addEventListener("DOMContentLoaded", () => {
     /** Equal width for every tile; image height follows intrinsic aspect (no crop). */
     const tileW = isMobile ? 140 : isXxl ? 220 : 200;
 
-    sorted.forEach((project) => {
-      const idx = project.timelineImage ?? 0;
-      const heroImages = project.heroImages?.length ? project.heroImages : [];
-      const rawPick =
-        idx === -1
-          ? project.thumbnail
-          : heroImages[idx]?.src || heroImages[0]?.src || project.thumbnail;
-      const coverSrc = resolvePreferStillMedia(project, rawPick);
+    sorted.forEach((project, timelineIdx) => {
+      const pool = (project.thumbnailImages || []).filter(Boolean);
+      if (!pool.length) return;
+
+      const coverSrc = normalizeAssetPath(pool[0]);
+
+      /** Scroll anchors to the end — prioritize the last few tiles. */
+      const fromEnd = sorted.length - 1 - timelineIdx;
+      const eager = fromEnd < 5;
 
       const el = document.createElement("div");
       el.className = "timeline__item";
@@ -465,7 +516,12 @@ document.addEventListener("DOMContentLoaded", () => {
       el.dataset.baseH = String(provisionalH);
       el.style.width = `${tileW}px`;
       el.style.height = `${provisionalH}px`;
-      appendCoverMedia(el, coverSrc, project.title, { autoplayVideo: false });
+      appendCoverMedia(el, coverSrc, project.title, {
+        autoplayVideo: true,
+        deferStripVideoUntilVisible: true,
+        imgLoading: eager ? "eager" : "lazy",
+        imgFetchPriority: eager ? "high" : "low",
+      });
       bindTimelineCoverMediaResize(el);
 
       el.addEventListener("mouseenter", () => handleTimelineHover(project, el));
@@ -541,14 +597,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleItemHover(item, el) {
     const slug = item.slug;
 
-    // Activate same-project items, dim others
+    // Same-project tiles get active z-index; all tiles stay full opacity for legibility
     document.querySelectorAll(".cloud__item").forEach((cloud) => {
       if (cloud.dataset.slug === slug) {
         gsap.to(cloud, { opacity: 1, duration: 0.3, ease: "power2.out" });
         cloud.classList.add("cloud__item--active");
         cloud.classList.remove("cloud__item--dimmed");
       } else {
-        gsap.to(cloud, { opacity: 0.2, duration: 0.3, ease: "power2.out" });
+        gsap.to(cloud, { opacity: 1, duration: 0.3, ease: "power2.out" });
         cloud.classList.add("cloud__item--dimmed");
         cloud.classList.remove("cloud__item--active");
       }
@@ -559,7 +615,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function handleItemLeave() {
     document.querySelectorAll(".cloud__item").forEach((el) => {
-      gsap.to(el, { opacity: 0.4, duration: 0.3, ease: "power2.out" });
+      gsap.to(el, { opacity: 1, duration: 0.3, ease: "power2.out" });
       el.classList.remove("cloud__item--active", "cloud__item--dimmed");
     });
     hideOverlay();
@@ -779,7 +835,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tl.to(
         group1,
         {
-          opacity: 0.4,
+          opacity: 1,
           scale: 1,
           duration: 0.6,
           ease: "power2.out",
@@ -790,7 +846,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tl.to(
         group2,
         {
-          opacity: 0.4,
+          opacity: 1,
           scale: 1,
           duration: 0.6,
           ease: "power2.out",
@@ -801,7 +857,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tl.to(
         group3,
         {
-          opacity: 0.4,
+          opacity: 1,
           scale: 1,
           duration: 0.6,
           ease: "power2.out",
@@ -928,7 +984,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tl.to(
         group1,
         {
-          opacity: 0.4,
+          opacity: 1,
           scale: 1,
           duration: 0.6,
           ease: "power2.out",
@@ -939,7 +995,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tl.to(
         group2,
         {
-          opacity: 0.4,
+          opacity: 1,
           scale: 1,
           duration: 0.6,
           ease: "power2.out",
@@ -950,7 +1006,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tl.to(
         group3,
         {
-          opacity: 0.4,
+          opacity: 1,
           scale: 1,
           duration: 0.6,
           ease: "power2.out",
