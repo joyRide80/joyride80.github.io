@@ -15,8 +15,8 @@ order: 7
 thumbnail: "/images/projects/yob/tiny_yob-mobile-hand.png"
 thumbnailImages:
   - "/images/projects/yob/tiny_yob-mobile-hand.png"
-  - "/images/projects/yob/tiny_yob-mobile.png"
-  - "/images/projects/yob/tiny_storyboard.png"
+  - "/images/projects/yob/tiny_yob-van.png"
+  - "/images/projects/yob/tiny_yob-plumber.png"
 heroImages:
   - src: "/images/projects/yob/yob-colour.png"
     size: "large"

@@ -520,7 +520,7 @@ ol {
   z-index: 90;
 }
 
-/* ---------- Mobile hamburger nav (≤768px only) ---------- */
+/* ---------- Mobile hamburger nav (enabled at ≤1024px) ---------- */
 
 .mobile-nav {
   display: none;
@@ -805,13 +805,24 @@ ol {
 .intro-slogan__text {
   font-family: var(--font-display);
   font-size: clamp(36px, 4vw + 20px, 56px);
-  line-height: clamp(40px, 4vw + 24px, 60px);
+  line-height: clamp(44px, 4.4vw + 24px, 66px);
   color: var(--gray-900);
   text-align: center;
   width: 100%;
   max-width: min(960px, calc(100vw - 2 * var(--page-padding)));
   padding: 0 var(--page-padding);
   text-transform: none;
+}
+
+/* SplitText line wrappers for intro animation — increase mask height & spacing */
+.intro-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.18em; /* extend mask so descenders aren't clipped */
+}
+
+.intro-line + .intro-line {
+  margin-top: 0.3em; /* extra space between first and second line */
 }
 
 .cloud__item {
@@ -905,6 +916,54 @@ img[data-cycle] {
 .timeline__overlay {
   position: absolute;
   z-index: 10;
+}
+
+@media (max-width: 1024px) {
+  .home.home--timeline-active .home__bio {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    max-width: none;
+    padding: 80px var(--page-padding) 20px;
+    margin: 0;
+    z-index: 1;
+  }
+
+  .timeline {
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 120px var(--page-padding) 120px;
+  }
+
+  .home.home--timeline-active .timeline {
+    position: relative;
+    inset: auto;
+    padding: 0 var(--page-padding) 120px;
+  }
+
+  .timeline.is-active {
+    display: block;
+  }
+
+  .timeline__track {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding: 0;
+  }
+
+  .timeline__item {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 4 / 5;
+    padding: 12px;
+  }
+
+  .timeline__item img,
+  .timeline__item > video {
+    object-fit: cover;
+  }
 }
 
 /* ---------- Layout: Project Page ---------- */
@@ -1600,14 +1659,7 @@ video.project__collage-overlay-video {
 }
 
 /* ---- Mobile (≤ 768px) ---- */
-@media (max-width: 768px) {
-  :root {
-    --project-figure-span1-max: 100%;
-    --project-figure-span2-max: 100%;
-    --project-collage-large-min-h: 200px;
-    --project-collage-full-min-h: 200px;
-  }
-
+@media (max-width: 1024px) {
   .mobile-nav {
     display: block;
   }
@@ -1615,6 +1667,16 @@ video.project__collage-overlay-video {
   .home__nav,
   .about__nav {
     display: none !important;
+  }
+}
+
+/* ---- Mobile (≤ 768px) ---- */
+@media (max-width: 768px) {
+  :root {
+    --project-figure-span1-max: 100%;
+    --project-figure-span2-max: 100%;
+    --project-collage-large-min-h: 200px;
+    --project-collage-full-min-h: 200px;
   }
 
   .global-contact {
@@ -1673,9 +1735,13 @@ video.project__collage-overlay-video {
     line-height: 34px;
   }
 
+  .timeline {
+    padding: 108px var(--page-padding) 112px;
+  }
+
   .timeline__track {
-    padding: 40vh 20px 0;
-    gap: 4px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   /* -- Project -- */
@@ -1787,6 +1853,15 @@ video.project__collage-overlay-video {
   :root {
     --project-collage-large-min-h: 160px;
     --project-collage-min-h: 100px;
+  }
+
+  .timeline {
+    padding: 96px var(--page-padding) 104px;
+  }
+
+  .timeline__track {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .home__bio-text {

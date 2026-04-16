@@ -431,6 +431,10 @@ document.addEventListener("DOMContentLoaded", () => {
   /** Must match `.timeline__item` horizontal padding in global.css (px). */
   const TIMELINE_ITEM_PADDING = 24;
 
+  function isTimelineGridMode() {
+    return window.innerWidth <= 1024;
+  }
+
   /** Caps portrait-tall tiles; landscape heights stay unchanged (below this). */
   function timelineItemMaxOuterHeightPx() {
     const vh =
@@ -449,6 +453,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function syncTimelineCoverMediaSize(el) {
+    if (isTimelineGridMode()) {
+      el.dataset.baseW = "";
+      el.dataset.baseH = "";
+      el.style.width = "";
+      el.style.height = "";
+      return;
+    }
+
     const tileW = el._timelineTileW;
     if (!tileW) return;
     const media = el.querySelector(":scope > img, :scope > video");
@@ -487,10 +499,13 @@ document.addEventListener("DOMContentLoaded", () => {
     timelineTrack.innerHTML = "";
 
     const sorted = [...projects].sort(compareProjectsChronological);
+    const isGrid = isTimelineGridMode();
     const isMobile = window.innerWidth < 768;
     const isXxl = window.innerWidth >= 1400;
     /** Equal width for every tile; image height follows intrinsic aspect (no crop). */
     const tileW = isMobile ? 140 : isXxl ? 220 : 200;
+
+    timelineView?.classList.toggle("timeline--grid", isGrid);
 
     sorted.forEach((project, timelineIdx) => {
       const pool = (project.thumbnailImages || []).filter(Boolean);
@@ -505,17 +520,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const el = document.createElement("div");
       el.className = "timeline__item";
       el.dataset.slug = project.slug;
-      el._timelineTileW = tileW;
+      el._timelineTileW = isGrid ? null : tileW;
 
-      const innerW = timelineInnerWidth(tileW);
-      const provisionalInnerH = Math.round((innerW * 5) / 4);
-      const provisionalH = capTimelineOuterHeight(
-        provisionalInnerH + 2 * TIMELINE_ITEM_PADDING,
-      );
-      el.dataset.baseW = String(tileW);
-      el.dataset.baseH = String(provisionalH);
-      el.style.width = `${tileW}px`;
-      el.style.height = `${provisionalH}px`;
+      if (!isGrid) {
+        const innerW = timelineInnerWidth(tileW);
+        const provisionalInnerH = Math.round((innerW * 5) / 4);
+        const provisionalH = capTimelineOuterHeight(
+          provisionalInnerH + 2 * TIMELINE_ITEM_PADDING,
+        );
+        el.dataset.baseW = String(tileW);
+        el.dataset.baseH = String(provisionalH);
+        el.style.width = `${tileW}px`;
+        el.style.height = `${provisionalH}px`;
+      }
       appendCoverMedia(el, coverSrc, project.title, {
         autoplayVideo: true,
         deferStripVideoUntilVisible: true,
@@ -540,6 +557,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleTimelineHover(project, hoveredEl) {
+    if (isTimelineGridMode()) {
+      showOverlay(project);
+      return;
+    }
+
     const items = Array.from(timelineTrack.querySelectorAll(".timeline__item"));
     const hoveredIndex = items.indexOf(hoveredEl);
 
@@ -572,6 +594,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleTimelineLeave() {
+    if (isTimelineGridMode()) {
+      hideOverlay();
+      return;
+    }
+
     const items = timelineTrack.querySelectorAll(".timeline__item");
     items.forEach((el) => {
       getTimelineMediaElements(el).forEach((m) => {
@@ -745,13 +772,16 @@ document.addEventListener("DOMContentLoaded", () => {
     hideOverlay();
 
     const sloganEl = document.getElementById("slogan");
+    const homeRoot = document.getElementById("home");
 
     if (view === "cloud") {
+      homeRoot?.classList.remove("home--timeline-active");
       cloudView.style.display = "block";
       timelineView.classList.remove("is-active");
       gsap.fromTo(cloudView, { opacity: 0 }, { opacity: 1, duration: 0.4 });
       if (sloganEl) gsap.to(sloganEl, { opacity: 1, duration: 0.3 });
     } else {
+      homeRoot?.classList.add("home--timeline-active");
       ensureTimelineRendered();
       cloudView.style.display = "none";
       timelineView.classList.add("is-active");
