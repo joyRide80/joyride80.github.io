@@ -107,7 +107,9 @@ document.addEventListener("DOMContentLoaded", () => {
    *   imgLoading?: "lazy" | "eager";
    *   imgFetchPriority?: "high" | "low" | "auto";
    *   deferStripVideoUntilVisible?: boolean;
+   *   stripIoRoot?: Element | null;
    * }} [opts] deferStripVideoUntilVisible: default true — autoplay strip videos only while in view.
+   * stripIoRoot: IO root (cloud uses #cloud-view; timeline must use null = viewport).
    */
   function appendCoverMedia(container, src, altText, opts = {}) {
     const autoplayVideo = opts.autoplayVideo !== false;
@@ -119,16 +121,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const v = document.createElement("video");
       v.style.opacity = "0";
       v.style.transition = "opacity 0.4s ease";
-      v.addEventListener("loadeddata", () => {
+      let revealed = false;
+      const revealVideo = () => {
+        if (revealed) return;
+        revealed = true;
+        window.clearTimeout(failOpenTimer);
         v.style.opacity = "1";
         setTimeout(() => {
           v.style.transition = "";
         }, 400);
-      });
-      if (v.readyState >= 2) {
-        v.style.opacity = "1";
-        v.style.transition = "";
-      }
+      };
+      const failOpenTimer = window.setTimeout(() => revealVideo(), 4500);
+      // Some browsers may delay `loadeddata` for muted/autoplay thumbnails.
+      // Reveal on metadata too so the tile doesn't stay invisible.
+      v.addEventListener("loadedmetadata", revealVideo, { once: true });
+      v.addEventListener("loadeddata", revealVideo, { once: true });
+      v.addEventListener("error", revealVideo, { once: true });
       v.src = normalizedSrc;
       v.muted = true;
       v.loop = autoplayVideo;
@@ -136,14 +144,17 @@ document.addEventListener("DOMContentLoaded", () => {
       v.setAttribute("playsinline", "");
       if (altText) v.setAttribute("aria-label", altText);
       container.appendChild(v);
+      if (v.readyState >= 2) revealVideo();
 
       if (autoplayVideo && deferStripVideo) {
         v.preload = "metadata";
         v.autoplay = false;
+        const ioRoot = opts.stripIoRoot !== undefined ? opts.stripIoRoot : null;
         const io = new IntersectionObserver(
           (entries) => {
             entries.forEach((ent) => {
-              if (ent.isIntersecting && ent.intersectionRatio >= 0.06) {
+              // Any visible intersection counts — ratio alone misses tiles covered by siblings.
+              if (ent.isIntersecting) {
                 v.preload = "auto";
                 v.play().catch(() => {});
               } else {
@@ -152,9 +163,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
           },
           {
-            root: null,
-            rootMargin: "120px 0px 160px 0px",
-            threshold: [0, 0.06, 0.2],
+            root: ioRoot,
+            rootMargin: "80px",
+            threshold: [0, 0.01, 0.15],
           },
         );
         io.observe(container);
@@ -225,6 +236,40 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
+   * Cloud-only pool: dedupe, then stills before videos. The first tile (only tile on mobile)
+   * must not be a deferred strip video, or the whole cluster can look empty (opacity 0 until IO/decode).
+   */
+  function cloudStripPool(urls) {
+    const deduped = dedupeHomeStripUrls(urls);
+    if (!deduped.length) return [];
+    const stills = deduped.filter((u) => !isVideoAssetPath(u));
+    const videos = deduped.filter((u) => isVideoAssetPath(u));
+    return [...stills, ...videos];
+  }
+
+  /**
+   * Same sources as the home strip, plus thumbnail + hero `src` fallbacks so a project always
+   * gets stills in the pool (avoids a lone deferred MP4 tile reading as “missing”).
+   */
+  function getCloudMediaPool(project) {
+    const raw = [];
+    if (Array.isArray(project.thumbnailImages)) {
+      for (const u of project.thumbnailImages) {
+        if (u && String(u).trim()) raw.push(String(u).trim());
+      }
+    }
+    const thumb = project.thumbnail && String(project.thumbnail).trim();
+    if (thumb) raw.push(thumb);
+    if (Array.isArray(project.heroImages)) {
+      for (const h of project.heroImages) {
+        const s = h?.src && String(h.src).trim();
+        if (s) raw.push(s);
+      }
+    }
+    return cloudStripPool(raw);
+  }
+
+  /**
    * Cloud layout: one ring slot per project; up to 2–3 tiles on desktop when the project has
    * that many *distinct* `thumbnailImages` (1 on mobile). Each tile uses a different URL — no duplicates.
    */
@@ -261,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     projects.forEach((project, pIndex) => {
-      const pool = dedupeHomeStripUrls(project.thumbnailImages || []);
+      const pool = getCloudMediaPool(project);
       if (!pool.length) return;
 
       const angle = (pIndex / totalProjects) * Math.PI * 2 - Math.PI / 2;
@@ -408,7 +453,8 @@ document.addEventListener("DOMContentLoaded", () => {
       appendCoverMedia(el, item.src, item.project.title, {
         autoplayVideo: true,
         deferStripVideoUntilVisible: true,
-        imgLoading: eager ? "eager" : "lazy",
+        stripIoRoot: cloudView,
+        imgLoading: "eager",
         imgFetchPriority: eager ? "high" : "low",
       });
 

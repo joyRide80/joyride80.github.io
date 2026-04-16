@@ -12,9 +12,9 @@ tags:
 category: "Edtech, AI, Game Design"
 introduction: "Inspired by the Feynman technique—learning by doing and explaining—Megalearn AI is a browser-based, Three.js-powered learning ecosystem for children and parents. Unlike traditional textbooks, the platform flips the pedagogical script: the learner is in the driver’s seat, making hypotheses and conducting experiments, while AI acts as a **superhuman** teacher. By integrating Generative AI into the core gameplay loop, we created a space where students seek deep understanding through curiosity rather than shallow memorization."
 order: 8
-thumbnail: "/images/projects/megalearn-ai/cardFlip.mp4"
+thumbnail: "/images/projects/megalearn-ai/tiny_cardFlip.mp4"
 thumbnailImages:
-  - "/images/projects/megalearn-ai/cardFlip.mp4"
+  - "/images/projects/megalearn-ai/tiny_cardFlip.mp4"
   - "/images/projects/megalearn-ai/tiny_desktop.png"
   - "/images/projects/megalearn-ai/tiny_gameLevel.png"
 heroImages:

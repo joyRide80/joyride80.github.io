@@ -13,10 +13,10 @@ tags:
 category: "SaaS, Productivity"
 introduction: "Beagle is a specialized online proposal tool built to help digital agencies create, share, and revise high-quality proposals with speed and precision. The project addressed a major industry pain point: the tedious, repetitive nature of proposal writing. By leveraging the Podio platform, we aimed to transform a fragmented workflow into a unified, browser-based experience that balances professional aesthetics with collaborative efficiency."
 order: 2
-thumbnail: "/images/projects/beagle/tiny_beagle-print.png"
+thumbnail: "/images/projects/beagle/tiny_beagle-video.mp4"
 thumbnailImages:
+  - "/images/projects/beagle/tiny_beagle-video.mp4"
   - "/images/projects/beagle/tiny_beagle-print.png"
-  - "/images/projects/beagle/tiny_logo-sketch.png"
   - "/images/projects/beagle/tiny_booklet.png"
 heroImages:
   - size: "full"
