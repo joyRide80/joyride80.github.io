@@ -457,6 +457,20 @@ if (
     overflow: visible;
   }
 
+  .project__content :global(figure[style*="span 1"]) {
+    max-width: min(100%, var(--project-figure-span1-max));
+  }
+
+  .project__content :global(figure[style*="span 2"]) {
+    max-width: min(100%, var(--project-figure-span2-max));
+  }
+
+  .project__content :global(figure[style*="span 3"]),
+  .project__content :global(figure[style*="span 4"]),
+  .project__content :global(figure.project__figure--full) {
+    max-width: 100%;
+  }
+
   .project__content :global(figure.project__figure--full) {
     grid-column: 1 / -1;
   }
@@ -589,9 +603,24 @@ if (
     .project__content :global(p),
     .project__content :global(ul),
     .project__content :global(ol),
-    .project__content :global(blockquote),
+    .project__content :global(blockquote) {
+      grid-column: 1 / -1 !important;
+    }
+
     .project__content :global(figure) {
       grid-column: 1 / -1 !important;
+      max-width: 100%;
+    }
+
+    /* Keep narrow image intent on tablet so span:1 doesn't become oversized. */
+    .project__content :global(figure[style*="span 1"]) {
+      grid-column: auto !important;
+      max-width: min(100%, var(--project-figure-span1-max));
+      justify-self: stretch;
+    }
+
+    .project__content :global(figure[style*="span 2"]) {
+      max-width: min(100%, var(--project-figure-span2-max));
     }
 
     .project__content :global(.project__embed) {
