@@ -65,7 +65,7 @@ const baseUrl = import.meta.env.BASE_URL;
     </div>
 
     <!-- Timeline View -->
-    <div class="timeline" id="timeline-view">
+    <div class="timeline is-active" id="timeline-view">
       <div class="timeline__track" id="timeline-track">
         <!-- Rendered by JS -->
       </div>
@@ -128,9 +128,12 @@ const baseUrl = import.meta.env.BASE_URL;
   :global(#site-logo),
   :global(#main-nav),
   :global(#home-bio),
-  :global(.home__switch),
   :global(.global-contact),
   :global(#slogan) {
     opacity: 0;
+  }
+
+  :global(.home__switch) {
+    display: none;
   }
 </style>

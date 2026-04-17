@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const switchTrack = document.getElementById("switch-track");
   const switchLabels = document.querySelectorAll(".switch__label");
 
-  let activeView = "cloud";
+  let activeView = "timeline";
   let isDragging = false;
   let dragStartX = 0;
   let canvasStartX = 0;
@@ -814,7 +814,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function switchView(view) {
     activeView = view;
-    switchTrack.dataset.active = view;
+    if (switchTrack) switchTrack.dataset.active = view;
     hideOverlay();
 
     const sloganEl = document.getElementById("slogan");
@@ -1104,6 +1104,8 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCloud();
   lastCloudLayoutBucket = cloudLayoutBucket();
   initDrag();
+  ensureTimelineRendered();
+  switchView("timeline");
   playIntro();
 
   // Recalculate on resize only when layout bands change (full re-render cancels in-flight video)
