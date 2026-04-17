@@ -4,14 +4,21 @@ import MobileNav from "../components/MobileNav.astro";
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
+  ogType?: string;
   navActive?: "work" | "about";
 }
 
 const {
   title = "joy·object — Product Designer & Creative Technologist",
   description = "Joy is an Oslo-based product designer and creative technologist with 17+ years of experience building AI-native products that feel intuitive, playful, and genuinely useful.",
+  ogImage = "/images/about/joy-portrait.jpg",
+  ogType = "website",
   navActive,
 } = Astro.props;
+
+const canonicalUrl = Astro.url.href;
+const absoluteOgImageUrl = new URL(ogImage, Astro.url).href;
 ---
 
 <!doctype html>
@@ -20,6 +27,21 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="joy·object" />
+    <meta property="og:image" content={absoluteOgImageUrl} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteOgImageUrl} />
     <title>{title}</title>
 
     <!-- Preload critical fonts -->

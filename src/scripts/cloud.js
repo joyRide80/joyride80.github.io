@@ -869,9 +869,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const introSlogan = document.getElementById("intro-slogan");
     const introSloganText = document.getElementById("intro-slogan-text");
 
-    gsap.set([logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean), {
+    const chromeEls = [logo, nav, bio, switchEl, contactEl].filter(Boolean);
+    if (activeView === "cloud" && sloganEl) chromeEls.push(sloganEl);
+
+    gsap.set(chromeEls, {
       opacity: 0,
     });
+    if (activeView !== "cloud" && sloganEl) {
+      gsap.set(sloganEl, { opacity: 0 });
+    }
     gsap.set(cloudItems, {
       opacity: 0,
       scale: 0.8,
@@ -900,7 +906,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function addIntroRevealTweens(revealLabel) {
       tl.addLabel(revealLabel);
       tl.to(
-        [logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean),
+        chromeEls,
         {
           opacity: 1,
           duration: 0.6,
@@ -1052,7 +1058,7 @@ document.addEventListener("DOMContentLoaded", () => {
           requestAnimationFrame(runIntroAfterFonts);
         });
     } else {
-      tl.to([logo, nav, bio, switchEl, contactEl, sloganEl].filter(Boolean), {
+      tl.to(chromeEls, {
         opacity: 1,
         duration: 0.6,
         ease: "power2.out",
