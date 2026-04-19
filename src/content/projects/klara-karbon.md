@@ -46,7 +46,11 @@ To create a carbon accounting platform, we needed to gain domain knowledge. I co
 
 ## Key Findings and Challenges
 
-Our research revealed two main issues: Lack of Transparency — Despite being a key part of the Greenhouse Gas (GHG) protocol, existing solutions lacked transparency. We wanted to create a platform that would empower users to understand their emissions in detail. Need for Expertise — Many people believed that calculating carbon emissions required expert knowledge, which was a barrier for small businesses with limited resources. Our goal was to make carbon accounting accessible and easy to understand.
+Our research revealed two main issues: 
+- **Lack of Transparency** 
+Despite being a key part of the Greenhouse Gas (GHG) protocol, existing solutions lacked transparency. We wanted to create a platform that would empower users to understand their emissions in detail. 
+- **Need for Expertise** 
+Many people believed that calculating carbon emissions required expert knowledge, which was a barrier for small businesses with limited resources. Our goal was to make carbon accounting accessible and easy to understand.
 
 ## Design process
 
@@ -58,11 +62,11 @@ The application's workflow is straightforward: users import invoices from extern
 - Emissions page: This page displays emission values by category, providing users with data to inform their decisions on reducing emissions.
 - Overview: A dashboard-style page showing the total emissions for all categories.
 
-![Transactions page|span:2|col:1](/images/projects/klara/transaction-page.png)
+![Transactions page|span:3|col:2](/images/projects/klara/transaction-page.png)
 
-![Emissions page|span:1|col:3](/images/projects/klara/emission-page.png)
+![Emissions page|span:2|col:1](/images/projects/klara/emission-page.png)
 
-![Overview page|span:1|col:4](/images/projects/klara/overview-page.png)
+![Overview page|span:2|col:3](/images/projects/klara/overview-page.png)
 
 ### User Testing and Iteration
 

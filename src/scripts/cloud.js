@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const overlaySubtitle = document.getElementById("overlay-subtitle");
   const switchTrack = document.getElementById("switch-track");
   const switchLabels = document.querySelectorAll(".switch__label");
+  const cloudEnabled = false;
 
   let activeView = "timeline";
   let isDragging = false;
@@ -1107,9 +1108,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // ============================================================
   // Init
   // ============================================================
-  renderCloud();
-  lastCloudLayoutBucket = cloudLayoutBucket();
-  initDrag();
+  if (cloudEnabled) {
+    renderCloud();
+    lastCloudLayoutBucket = cloudLayoutBucket();
+    initDrag();
+  } else {
+    if (cloudView) cloudView.style.display = "none";
+    const sloganEl = document.getElementById("slogan");
+    if (sloganEl) gsap.set(sloganEl, { opacity: 0 });
+  }
   ensureTimelineRendered();
   switchView("timeline");
   playIntro();
@@ -1120,7 +1127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       const cloudBucket = cloudLayoutBucket();
-      if (cloudBucket !== lastCloudLayoutBucket) {
+      if (cloudEnabled && cloudBucket !== lastCloudLayoutBucket) {
         lastCloudLayoutBucket = cloudBucket;
         renderCloud();
       }
