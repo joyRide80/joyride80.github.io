@@ -483,6 +483,27 @@ if (
     flex-shrink: 0;
   }
 
+  /* Wrapper avoids flex/grid sizing glitches where <video> height stays 0 until metadata loads */
+  .project__content :global(figure .project__content-figure-media) {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    display: block;
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    line-height: 0;
+  }
+
+  .project__content :global(figure .project__content-figure-media video) {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0;
+    border-radius: 0;
+  }
+
   .project__content :global(figcaption) {
     font-family: var(--font-mono);
     font-size: var(--project-fluid-label);

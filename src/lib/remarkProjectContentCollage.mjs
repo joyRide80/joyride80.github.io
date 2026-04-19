@@ -4,8 +4,9 @@ import { getYouTubeEmbedSrc } from "./youtubeEmbedUrl.js";
 /**
  * Remark plugin for the 4-column project page grid.
  *
- * Images can carry placement metadata in their alt text:
+ * Images and video files (e.g. .mp4) can carry placement metadata in alt text:
  *   ![alt text|span:2|col:3](/path/to/image.png)
+ *   ![|span:3|col:2](/path/to/clip.mp4)
  *   ![alt|cycle:/a.png,/b.png](/main.png)
  *
  * YouTube watch / youtu.be / embed URLs in `![](…)` render as the same
@@ -39,6 +40,11 @@ function stripVisiblePrefix(s) {
   const t = (s || "").trim();
   const without = t.replace(/^\s*visible\s+/i, "").trim();
   return without.length > 0 ? without : t;
+}
+
+/** @param {string} src */
+function isVideoAssetPath(src) {
+  return /\.(mp4|webm|ogg)(\?.*)?$/i.test(src || "");
 }
 
 function parseImageMeta(altText, baseWithSlash) {
@@ -123,6 +129,20 @@ function buildGridFigure(img, baseWithSlash) {
 
   const prefixedUrl = withBasePublicPath(mainUrl, baseWithSlash) ?? mainUrl;
   const src = escapeAttr(prefixedUrl);
+
+  if (isVideoAssetPath(prefixedUrl)) {
+    const ariaLabel = captionText.length > 0 ? cleanAlt : escapeAttr("Video");
+    return {
+      type: "html",
+      value:
+        `<figure style="grid-column:${gridCol}/span ${gridSpan}">` +
+        `<div class="project__content-figure-media">` +
+        `<video src="${src}" muted loop playsinline autoplay preload="metadata" aria-label="${ariaLabel}"></video>` +
+        `</div>` +
+        figcaption +
+        `</figure>`,
+    };
+  }
 
   const mainPrefixed = withBasePublicPath(mainUrl, baseWithSlash) ?? mainUrl;
   let pool = cyclePaths.length ? [...cyclePaths] : [];
