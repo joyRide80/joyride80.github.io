@@ -41,6 +41,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const switchLabels = document.querySelectorAll(".switch__label");
   const cloudEnabled = false;
 
+  /** First N intro strip stills to preload before intro reveals the page. */
+  const STRIP_EAGER_TILE_COUNT = 6;
+  const STRIP_PRELOAD_TIMEOUT_MS = 3500;
+
   let activeView = "timeline";
   let isDragging = false;
   let dragStartX = 0;
@@ -421,6 +425,107 @@ document.addEventListener("DOMContentLoaded", () => {
     return items.filter((item) => !item._exclusion);
   }
 
+  /**
+   * Pick intro preload stills from project media pools without depending on cloud layout.
+   * Pass 1 picks one still per project; pass 2 fills remaining slots from leftover stills.
+   */
+  function getIntroPreloadUrls(limit = STRIP_EAGER_TILE_COUNT) {
+    const max = Math.max(0, Number(limit) || 0);
+    if (!max) return [];
+
+    const chosen = [];
+    const seen = new Set();
+    const stillPools = projects.map((project) =>
+      getCloudMediaPool(project).filter((u) => u && !isVideoAssetPath(u)),
+    );
+
+    const addUrl = (rawUrl) => {
+      const normalized = normalizeAssetPath(rawUrl);
+      if (!normalized || seen.has(normalized)) return false;
+      seen.add(normalized);
+      chosen.push(normalized);
+      return true;
+    };
+
+    // First pass: one representative still per project.
+    stillPools.forEach((pool) => {
+      if (chosen.length >= max || !pool.length) return;
+      addUrl(pool[0]);
+    });
+
+    // Second pass: fill remaining slots from the rest of each pool.
+    if (chosen.length < max) {
+      stillPools.forEach((pool) => {
+        if (chosen.length >= max || pool.length < 2) return;
+        for (let i = 1; i < pool.length && chosen.length < max; i += 1) {
+          addUrl(pool[i]);
+        }
+      });
+    }
+
+    return chosen.slice(0, max);
+  }
+
+  /**
+   * Preload a URL list and report ratio progress.
+   * @param {string[]} urls
+   * @param {(ratio: number) => void} [onProgress] 0–1 per decoded still (deduped list).
+   * @param {number} [timeoutMs]
+   */
+  function preloadStillUrls(
+    urls,
+    onProgress,
+    timeoutMs = STRIP_PRELOAD_TIMEOUT_MS,
+  ) {
+    const unique = [...new Set((urls || []).filter(Boolean))];
+    if (!unique.length) {
+      onProgress?.(1);
+      return Promise.resolve();
+    }
+
+    let done = 0;
+    const bump = () => {
+      done += 1;
+      onProgress?.(Math.min(1, done / unique.length));
+    };
+
+    const loadOne = (src) =>
+      new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          bump();
+          resolve();
+        };
+        img.onerror = () => {
+          bump();
+          resolve();
+        };
+        img.src = src;
+      });
+
+    const loadAll = Promise.all(unique.map(loadOne)).then(() => {
+      onProgress?.(1);
+    });
+
+    const timeout = new Promise((resolve) => {
+      setTimeout(() => {
+        onProgress?.(1);
+        resolve();
+      }, timeoutMs);
+    });
+
+    return Promise.race([loadAll, timeout]);
+  }
+
+  /**
+   * Preload still (non-video) URLs for intro strip imagery.
+   * Videos are excluded; they load via `<video>` after reveal.
+   */
+  function preloadFirstCloudStripStills() {
+    const urls = getIntroPreloadUrls(STRIP_EAGER_TILE_COUNT);
+    return preloadStillUrls(urls, undefined, STRIP_PRELOAD_TIMEOUT_MS);
+  }
+
   // ============================================================
   // Render cloud items
   // ============================================================
@@ -431,9 +536,6 @@ document.addEventListener("DOMContentLoaded", () => {
     cloudCanvas.querySelectorAll(".cloud__item").forEach((el) => el.remove());
 
     const items = generateCloudPositions();
-
-    /** First tiles compete for LCP; rest defer to reduce Slow 4G contention. */
-    const cloudEagerTileCount = 12;
 
     items.forEach((item, i) => {
       const el = document.createElement("div");
@@ -450,7 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
         el.style.transform = "scale(1)";
       }
 
-      const eager = i < cloudEagerTileCount;
+      const eager = i < STRIP_EAGER_TILE_COUNT;
       appendCoverMedia(el, item.src, item.project.title, {
         autoplayVideo: true,
         deferStripVideoUntilVisible: true,
@@ -488,7 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
       typeof window !== "undefined" && window.innerHeight > 0
         ? window.innerHeight
         : 900;
-    return Math.min(240, Math.max(280, Math.round(vh * 0.4)));
+    return Math.min(280, Math.max(240, Math.round(vh * 0.4)));
   }
 
   function capTimelineOuterHeight(outerH) {
@@ -813,7 +915,8 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(apply, 300);
   }
 
-  function switchView(view) {
+  function switchView(view, opts = {}) {
+    const shouldEnsureTimeline = opts.ensureTimeline !== false;
     activeView = view;
     if (switchTrack) switchTrack.dataset.active = view;
     hideOverlay();
@@ -829,11 +932,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (sloganEl) gsap.to(sloganEl, { opacity: 1, duration: 0.3 });
     } else {
       homeRoot?.classList.add("home--timeline-active");
-      ensureTimelineRendered();
+      if (shouldEnsureTimeline) ensureTimelineRendered();
       cloudView.style.display = "none";
       timelineView.classList.add("is-active");
       gsap.fromTo(timelineView, { opacity: 0 }, { opacity: 1, duration: 0.4 });
-      scrollTimelineToEnd();
+      if (shouldEnsureTimeline) scrollTimelineToEnd();
       if (sloganEl) gsap.to(sloganEl, { opacity: 0, duration: 0.3 });
     }
   }
@@ -859,6 +962,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const isFirstVisit = !sessionStorage.getItem(INTRO_KEY);
 
   function playIntro() {
+    const homeEl = document.getElementById("home");
     const logo = document.getElementById("site-logo");
     const nav = document.getElementById("main-nav");
     const bio = document.getElementById("home-bio");
@@ -894,7 +998,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const tl = gsap.timeline({
       paused: true,
       onComplete: () => {
+        if (activeView === "timeline") {
+          ensureTimelineRendered();
+          scrollTimelineToEnd();
+        }
         introFinished = true;
+        homeEl?.setAttribute("aria-busy", "false");
         try {
           sessionStorage.setItem(INTRO_KEY, "1");
         } catch {
@@ -955,6 +1064,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gsap.set(introSloganText, { opacity: 1 });
 
       const runIntroAfterFonts = () => {
+        homeEl?.setAttribute("aria-busy", "true");
         const revealLabel = "revealSite";
         try {
           const split = SplitText.create(introSloganText, {
@@ -1009,6 +1119,10 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           }
 
+          tl.call(() => {
+            preloadFirstCloudStripStills();
+          });
+
           tl.to(
             split.lines,
             {
@@ -1016,7 +1130,7 @@ document.addEventListener("DOMContentLoaded", () => {
               duration: 0.55,
               ease: "power2.inOut",
             },
-            "+=0.65",
+            ">+0.2",
           );
 
           tl.to(introSlogan, {
@@ -1029,12 +1143,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
           addIntroRevealTweens(revealLabel);
         } catch {
+          homeEl?.setAttribute("aria-busy", "true");
           tl.fromTo(
             introSloganText,
             { opacity: 0, y: 24 },
             { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" },
           );
           tl.to({}, { duration: 0.55 });
+          tl.call(() => {
+            preloadFirstCloudStripStills();
+          });
           tl.to(introSloganText, {
             opacity: 0,
             duration: 0.45,
@@ -1059,6 +1177,9 @@ document.addEventListener("DOMContentLoaded", () => {
           requestAnimationFrame(runIntroAfterFonts);
         });
     } else {
+      homeEl?.setAttribute("aria-busy", "true");
+      // Repeat visits favor instant reveal; do not block on preload.
+      preloadFirstCloudStripStills();
       tl.to(chromeEls, {
         opacity: 1,
         duration: 0.6,
@@ -1117,8 +1238,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const sloganEl = document.getElementById("slogan");
     if (sloganEl) gsap.set(sloganEl, { opacity: 0 });
   }
-  ensureTimelineRendered();
-  switchView("timeline");
+  switchView("timeline", { ensureTimeline: false });
   playIntro();
 
   // Recalculate on resize only when layout bands change (full re-render cancels in-flight video)
