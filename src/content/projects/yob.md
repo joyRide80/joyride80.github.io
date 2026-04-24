@@ -11,7 +11,7 @@ tags:
   - "Product Strategy"
 category: "ServiceTech / HomeTech"
 introduction: "YOB is a mobile-first platform designed to simplify the process of hiring a plumber by offering fixed prices and a seamless booking experience. It solves the common frustrations of home maintenance: high price uncertainty and fragmented communication between homeowners and professionals."
-order: 8
+order: 7
 thumbnail: "/images/projects/yob/tiny_yob-mobile-hand.png"
 thumbnailImages:
   - "/images/projects/yob/tiny_yob-mobile-hand.png"

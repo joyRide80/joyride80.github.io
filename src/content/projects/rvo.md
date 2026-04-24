@@ -31,8 +31,6 @@ heroImages:
 
 As the Lead Designer, I headed the digital transformation of the RVO workflow. My goal was to replace the rigid desktop system with a **mobile-first** experience that mirrored the inspectors' actual day-to-day reality in the field.
 
-**On-Site Observation:** I conducted deep-dive user research, including on-site observations to understand the physical constraints of their work. This was crucial in designing for users who were hesitant to adopt new technology.
-
 **Iterative Prototyping:** I led the project from initial wireframe concepts to high-fidelity clickable prototypes. We conducted multiple rounds of user testing to ensure the interface was intuitive enough to replace their trusted paper-and-pen method.
 
 **Design System Architecture:** I created and maintained a new, robust design system tailored for mobile and tablet use, ensuring high accessibility and legibility for field conditions.
