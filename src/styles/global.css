@@ -921,6 +921,14 @@ img[data-cycle] {
 }
 
 @media (max-width: 1024px) {
+  /* The timeline becomes a multi-row grid at this breakpoint. Allow its rows to
+     expand the page rather than clipping them inside the desktop viewport shell. */
+  .home.home--timeline-active {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
   .home.home--timeline-active .home__bio {
     position: relative;
     top: auto;
