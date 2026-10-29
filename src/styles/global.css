@@ -1870,7 +1870,9 @@ video.project__collage-overlay-video {
   }
 
   .timeline__track {
-    grid-template-columns: 1fr;
+    /* Keep thumbnails compact on narrow phones so their source images are not
+       enlarged to the full viewport width. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
