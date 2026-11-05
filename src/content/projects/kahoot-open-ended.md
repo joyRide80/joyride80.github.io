@@ -1,7 +1,7 @@
 ---
 title: "Kahoot!"
-headline: "Expanding the Kahoot! Experience"
-subtitle: "Introducing Open-Ended Questions"
+headline: "Open-ended questions for Kahoot!"
+subtitle: "Letting players type their own answers"
 year: "2020"
 url: "kahoot.com"
 tags:
@@ -10,7 +10,7 @@ tags:
   - "User interview"
   - "UI design"
 category: "Edtech"
-introduction: "Kahoot! is a global learning platform known for its fast-paced, multiple-choice games. To evolve the experience for its 1 billion annual players, we needed to move beyond pre-defined answers to support deeper knowledge assessment through a new Open-Ended question type."
+introduction: "Kahoot! had always asked players to choose from answers on screen. Open-ended questions let teachers test recall instead. I designed the player input and host results experience for a game that can include up to 2,000 people at once."
 order: 5
 thumbnail: "/images/projects/kahoot/tiny_kahootLogo.png"
 thumbnailImages:
@@ -32,13 +32,11 @@ heroImages:
 
 ## My Approach
 
-As a Product Designer, I led the design of this feature to help teachers test student recall without visual cues. I focused on maintaining Kahoot!’s signature "quick and fun" energy.
-
-while building a UI that could handle diverse text inputs. Through prototyping and user testing, I bridged the gap between casual engagement and serious academic evaluation.
+I led the design of the feature, from typing an answer on a phone to revealing results on the host screen. The challenge was to add a slower, more thoughtful question type without losing the pace and character of a Kahoot! game. I tested both interactions through prototypes and user sessions.
 
 ## Exploration
 
-Before we decided to add this question type, we were concerned that the game experience would be inconsistent. For example, the pace of answering open-ended questions would be slower than close-ended ones. As a result, players needed more time to formulate their answers and be careful about typos.
+Open-ended answers take longer than multiple choice. Players need time to think, type, and check for mistakes, so the existing rhythm could not simply carry over.
 
 > How might we create a consistent user experience throughout the game?
 
@@ -52,9 +50,9 @@ I also looked at Drops' UI for inspiration. Drops doesn't use a mobile phone key
 
 I made a keyboard prototype and showed it to people in the office. My first impression was that people looked puzzled and were not confident about what to do. Why could they only see a limited number of letters? Why did they need to connect the letters by dragging? Why couldn't they tap on each letter like a 'normal' keyboard?
 
-From a technical point of view, a custom-made keyboard with a limited number of letters was complex to build. This was because before the system launches each question, it needs to communicate with all mobile phones participating in the game—and we allow up to 2,000 participants. So, I moved away from the custom keyboard idea and we decided to use the standard system keyboard instead.
+The custom keyboard also introduced a technical cost. Before each question, the system would have to send its letter set to every phone in a game, sometimes up to 2,000 devices. The interaction was unfamiliar and the implementation was heavy, so we chose the standard system keyboard instead.
 
-However, instead of showing a plain white input field, we used Kahoot! colour blocks as the background. I was delighted with this solution. By doing this, players felt confident typing while still seeing the signature look and feel of Kahoot!
+We kept Kahoot!'s four colour blocks behind the input. Players could type in a familiar way while the screen still looked and felt like part of the game.
 
 ![Multiple-choice question |span:2|col:1](/images/projects/kahoot/multiple.png)
 
@@ -62,9 +60,9 @@ However, instead of showing a plain white input field, we used Kahoot! colour bl
 
 ## The host's screen
 
-After players submitted their answers, they often stared at a white screen waiting for the results. We discovered we could make this moment more exciting. Instead of showing only the correct answer, we showed all the submitted ones. It was entertaining to see what others had typed.
+After submitting an answer, players used to wait on a blank screen. We used that pause to show all submitted answers on the host screen, giving the group something to react to before the result appeared.
 
-When players saw their own answers on the screen, it built anticipation. We decided to make this moment more dramatic by prolonging the "moment of suspicion."
+Seeing their own answers on the shared screen built anticipation. We extended that moment of suspense before revealing the result.
 
 <figure>
   <div class="project__embed" style="aspect-ratio: 1568 / 1024">
@@ -83,7 +81,7 @@ When players saw their own answers on the screen, it built anticipation. We deci
   <figcaption>An animation prototype exploring a "Cliffhanger" moment on the host's screen</figcaption>
 </figure>
 
-I made many animation prototypes using Adobe After Effects and shared them with designers and developers. After several rounds of feedback and fine-tuning, we came up with this "Cliffhanger" moment. After players submit their answers, all entries appear on the screen simultaneously and start shaking. Some wrong answers fall away, leaving only the top three. These answers grow larger as they compete, until finally only the correct one remains.
+I made animation prototypes in Adobe After Effects and reviewed them with designers and developers. In the final "Cliffhanger" sequence, all answers appear and begin to shake. Incorrect answers fall away until three remain. Those three grow as they compete for space, then the correct answer takes the screen.
 
 ![The design focuses on the demographics of correct answers.|span:2|col:1](/images/projects/kahoot/host-screen-demo.png)
 

@@ -39,7 +39,7 @@ function rehypePrefixBaseAssets() {
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://joyride80.github.io",
+  site: "https://joyobject.org",
   base,
   devToolbar: {
     enabled: false,

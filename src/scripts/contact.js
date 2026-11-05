@@ -9,27 +9,59 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!drawer) return;
 
   let isOpen = false;
+  let activeTrigger = null;
+  drawer.setAttribute("aria-hidden", "true");
+  triggers.forEach((el) => {
+    el.setAttribute("aria-controls", "contact-drawer");
+    el.setAttribute("aria-expanded", "false");
+  });
 
-  function toggleDrawer() {
-    isOpen = !isOpen;
-    drawer.classList.toggle("is-open", isOpen);
+  function suppressMotionOnce() {
+    drawer.classList.add("is-motion-suppressed");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        drawer.classList.remove("is-motion-suppressed");
+      });
+    });
   }
 
-  function closeDrawer() {
+  function toggleDrawer(trigger, instant = false) {
+    if (instant) suppressMotionOnce();
+    isOpen = !isOpen;
+    activeTrigger = isOpen ? trigger : activeTrigger;
+    drawer.classList.toggle("is-open", isOpen);
+    drawer.setAttribute("aria-hidden", String(!isOpen));
+    triggers.forEach((el) =>
+      el.setAttribute("aria-expanded", String(isOpen)),
+    );
+    if (isOpen) {
+      requestAnimationFrame(() => drawer.querySelector("a")?.focus());
+    } else {
+      activeTrigger?.focus();
+      activeTrigger = null;
+    }
+  }
+
+  function closeDrawer(instant = false, restoreFocus = true) {
+    if (instant) suppressMotionOnce();
     isOpen = false;
     drawer.classList.remove("is-open");
+    drawer.setAttribute("aria-hidden", "true");
+    triggers.forEach((el) => el.setAttribute("aria-expanded", "false"));
+    if (restoreFocus) activeTrigger?.focus();
+    activeTrigger = null;
   }
 
   triggers.forEach((el) => {
     el.addEventListener("click", (e) => {
       e.preventDefault();
-      toggleDrawer();
+      toggleDrawer(el, e.detail === 0);
     });
     if (el.getAttribute("role") === "button") {
       el.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          toggleDrawer();
+          toggleDrawer(el, true);
         }
       });
     }
@@ -42,14 +74,14 @@ document.addEventListener("DOMContentLoaded", () => {
       !drawer.contains(e.target) &&
       !e.target.closest("[data-open-contact-drawer]")
     ) {
-      closeDrawer();
+      closeDrawer(false, false);
     }
   });
 
   // Close on Escape
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && isOpen) {
-      closeDrawer();
+      closeDrawer(true);
     }
   });
 });

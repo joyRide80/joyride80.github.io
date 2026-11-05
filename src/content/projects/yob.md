@@ -1,7 +1,7 @@
 ---
 title: "YOB"
-headline: "Launching YOB"
-subtitle: "From vision to prototype: making plumbing services predictable"
+headline: "YOB"
+subtitle: "Making plumbing prices clear before booking"
 year: "2024-2025"
 url: "yob.no"
 tags:
@@ -10,7 +10,7 @@ tags:
   - "Rapid Prototyping"
   - "Product Strategy"
 category: "ServiceTech / HomeTech"
-introduction: "YOB is a mobile-first platform designed to simplify the process of hiring a plumber by offering fixed prices and a seamless booking experience. It solves the common frustrations of home maintenance: high price uncertainty and fragmented communication between homeowners and professionals."
+introduction: "YOB tested a simpler way to book a plumber. Homeowners could choose a job at a fixed price, see what was included, and book on their phone instead of negotiating scope and cost through calls and messages."
 order: 7
 thumbnail: "/images/projects/yob/tiny_yob-mobile-hand.png"
 thumbnailImages:
@@ -24,23 +24,23 @@ heroImages:
     size: "large"
 ---
 
-## My Contribution:
+## My role
 
-As the lead designer, I was responsible for translating this vision into a tangible product. I built the brand from the ground up, established a comprehensive design system, and conducted deep-dive user interviews to ensure the UX addressed real-world pain points. Through rapid prototyping and concept development, I shaped a platform that makes booking a plumber as predictable and easy as any modern digital service.
+I led the product and brand design. Interviews helped me map the gaps between homeowners, plumbers, and office staff. I used storyboards and prototypes to work through those gaps, then created the visual identity and design system for the service.
 
 ![|span:1|col:3](/images/projects/yob/yob-plumber.png)
 
-## The Challenge: Bridging the Trust Gap
+## The trust problem
 
-Through deep-dive user interviews, we identified that the primary friction point wasn't just the plumbing work itself, but the uncertainty of the service. Clients frequently dealt with **no-shows** and felt forced to constantly follow up just to confirm an appointment. For YOB to establish a higher level of trust than the existing market, we had to solve the communication breakdown between three key stakeholders: the Clients, the Plumbers, and the Office Service Staff.
+Interviews showed that uncertainty started before the plumber arrived. Homeowners dealt with **no-shows** and chased confirmations, while plumbers and office staff worked from different information. The service had to keep all three groups in sync.
 
 ![|span:1|col:2](/images/projects/yob/persona-owner.png)
 
 ![|span:1|col:3](/images/projects/yob/persona-service.png)
 
-## My Strategy: Storyboarding the Service Ecosystem
+## Mapping the service with storyboards
 
-To align these three groups, I used storyboarding as a core communication tool. By sketching the end-to-end journey from both the client’s and the plumber’s perspectives, I was able to visualize the "blind spots" in the service. This bird’s-eye view allowed stakeholders to see exactly where communication was failing and helped us design a more synchronized experience.
+I drew the end-to-end journey from the homeowner's and plumber's perspectives. Putting both stories side by side made the handoff problems visible to the team and gave us a shared reference for the prototype.
 
 ![|span:4|col:1](/images/projects/yob/storyboard.png)
 

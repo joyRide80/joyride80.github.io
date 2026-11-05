@@ -14,6 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const projects = window.__PROJECTS__ || [];
   if (!projects.length) return;
   const basePrefix = (window.__BASE_URL__ || "/").replace(/\/$/, "");
+  const motionPreference = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  );
 
   function normalizeAssetPath(path) {
     if (!path) return path;
@@ -28,6 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (path.startsWith(`${basePrefix}/`)) return path;
     if (path.startsWith("/")) return basePrefix + path;
     return path;
+  }
+
+  function projectHref(slug) {
+    return `${basePrefix}/projects/${slug}`;
   }
 
   const cloudCanvas = document.getElementById("cloud-canvas");
@@ -117,7 +124,8 @@ document.addEventListener("DOMContentLoaded", () => {
    * stripIoRoot: IO root (cloud uses #cloud-view; timeline must use null = viewport).
    */
   function appendCoverMedia(container, src, altText, opts = {}) {
-    const autoplayVideo = opts.autoplayVideo !== false;
+    const autoplayVideo =
+      opts.autoplayVideo !== false && !motionPreference.matches;
     const deferStripVideo =
       opts.deferStripVideoUntilVisible !== false &&
       typeof IntersectionObserver === "function";
@@ -125,7 +133,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isVideoAssetPath(src)) {
       const v = document.createElement("video");
       v.style.opacity = "0";
-      v.style.transition = "opacity 0.4s ease";
+      v.style.transition = motionPreference.matches
+        ? ""
+        : "opacity 0.4s ease";
       let revealed = false;
       const revealVideo = () => {
         if (revealed) return;
@@ -184,7 +194,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const img = document.createElement("img");
     img.style.opacity = "0";
-    img.style.transition = "opacity 0.4s ease";
+    img.style.transition = motionPreference.matches
+      ? ""
+      : "opacity 0.4s ease";
     img.decoding = "async";
     if (opts.imgFetchPriority) {
       img.fetchPriority = opts.imgFetchPriority;
@@ -538,9 +550,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const items = generateCloudPositions();
 
     items.forEach((item, i) => {
-      const el = document.createElement("div");
+      const el = document.createElement("a");
       el.className = "cloud__item";
       el.dataset.slug = item.slug;
+      el.href = projectHref(item.slug);
+      el.setAttribute("aria-label", `View ${item.project.title} project`);
       el.style.left = `${item.x}px`;
       el.style.top = `${item.y}px`;
       el.style.width = `${item.w}px`;
@@ -563,11 +577,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       el.addEventListener("mouseenter", () => handleItemHover(item, el));
       el.addEventListener("mouseleave", handleItemLeave);
-      el.addEventListener("click", () => {
-        if (!isDragging) {
-          const baseUrl = window.__BASE_URL__ || "/";
-          window.location.href = `${baseUrl.replace(/\/$/, "")}/projects/${item.slug}`;
-        }
+      el.addEventListener("click", (event) => {
+        if (isDragging) event.preventDefault();
       });
 
       cloudCanvas.appendChild(el);
@@ -666,9 +677,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const fromEnd = sorted.length - 1 - timelineIdx;
       const eager = fromEnd < 5;
 
-      const el = document.createElement("div");
+      const el = document.createElement("a");
       el.className = "timeline__item";
       el.dataset.slug = project.slug;
+      el.href = projectHref(project.slug);
+      el.setAttribute("aria-label", `View ${project.title} project`);
       el._timelineTileW = isGrid ? null : tileW;
 
       if (!isGrid) {
@@ -692,21 +705,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       el.addEventListener("mouseenter", () => handleTimelineHover(project, el));
       el.addEventListener("mouseleave", handleTimelineLeave);
-      el.addEventListener("click", () => {
-        const baseUrl = window.__BASE_URL__ || "/";
-        window.location.href = `${baseUrl.replace(/\/$/, "")}/projects/${project.slug}`;
-      });
-
       timelineTrack.appendChild(el);
     });
   }
 
-  function getTimelineMediaElements(el) {
-    return Array.from(el.querySelectorAll(":scope > img, :scope > video"));
-  }
-
   function handleTimelineHover(project, hoveredEl) {
-    if (isTimelineGridMode()) {
+    if (isTimelineGridMode() || motionPreference.matches) {
       showOverlay(project);
       return;
     }
@@ -715,53 +719,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const hoveredIndex = items.indexOf(hoveredEl);
 
     items.forEach((el, i) => {
-      const baseW = Number(el.dataset.baseW);
-      const baseH = Number(el.dataset.baseH);
       const distance = Math.abs(i - hoveredIndex);
       let factor = 1;
-      if (distance === 0) factor = 1.15;
-      else if (distance === 1) factor = 1.06;
-      else if (distance === 2) factor = 1.02;
+      if (distance === 0) factor = 1.08;
+      else if (distance === 1) factor = 1.025;
+      else if (distance === 2) factor = 1.01;
 
       gsap.to(el, {
-        width: Math.round(baseW * factor),
-        height: Math.round(baseH * factor),
-        duration: 0.4,
-        ease: "power2.out",
-      });
-    });
-
-    getTimelineMediaElements(hoveredEl).forEach((m) => {
-      gsap.to(m, {
-        scale: 1.08,
-        duration: 0.45,
-        ease: "power2.out",
-        transformOrigin: "50% 50%",
+        scale: factor,
+        zIndex: distance === 0 ? 3 : distance === 1 ? 2 : 1,
+        duration: 0.22,
+        ease: "power2.inOut",
+        transformOrigin: "50% 100%",
+        overwrite: "auto",
       });
     });
     showOverlay(project);
   }
 
   function handleTimelineLeave() {
-    if (isTimelineGridMode()) {
+    if (isTimelineGridMode() || motionPreference.matches) {
       hideOverlay();
       return;
     }
 
     const items = timelineTrack.querySelectorAll(".timeline__item");
     items.forEach((el) => {
-      getTimelineMediaElements(el).forEach((m) => {
-        gsap.to(m, {
-          scale: 1,
-          duration: 0.45,
-          ease: "power2.out",
-        });
-      });
       gsap.to(el, {
-        width: Number(el.dataset.baseW),
-        height: Number(el.dataset.baseH),
-        duration: 0.4,
-        ease: "power2.out",
+        scale: 1,
+        zIndex: 1,
+        duration: 0.18,
+        ease: "power2.inOut",
+        overwrite: "auto",
       });
     });
     hideOverlay();
@@ -776,11 +765,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Same-project tiles get active z-index; all tiles stay full opacity for legibility
     document.querySelectorAll(".cloud__item").forEach((cloud) => {
       if (cloud.dataset.slug === slug) {
-        gsap.to(cloud, { opacity: 1, duration: 0.3, ease: "power2.out" });
         cloud.classList.add("cloud__item--active");
         cloud.classList.remove("cloud__item--dimmed");
       } else {
-        gsap.to(cloud, { opacity: 1, duration: 0.3, ease: "power2.out" });
         cloud.classList.add("cloud__item--dimmed");
         cloud.classList.remove("cloud__item--active");
       }
@@ -791,7 +778,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function handleItemLeave() {
     document.querySelectorAll(".cloud__item").forEach((el) => {
-      gsap.to(el, { opacity: 1, duration: 0.3, ease: "power2.out" });
       el.classList.remove("cloud__item--active", "cloud__item--dimmed");
     });
     hideOverlay();
@@ -806,27 +792,34 @@ document.addEventListener("DOMContentLoaded", () => {
     overlayTitle.textContent = project.title || "";
     overlaySubtitle.textContent = project.subtitle || project.headline || "";
 
+    if (motionPreference.matches) {
+      gsap.set(overlay, { opacity: 1, y: 0 });
+      return;
+    }
+
     gsap.killTweensOf(overlay);
-    gsap.fromTo(
-      overlay,
-      { opacity: 0, y: 10 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.35,
-        ease: "power2.out",
-      },
-    );
+    gsap.to(overlay, {
+      opacity: 1,
+      y: 0,
+      duration: 0.18,
+      ease: "power3.out",
+      overwrite: "auto",
+    });
   }
 
   function hideOverlay() {
     if (!overlay) return;
+    if (motionPreference.matches) {
+      gsap.set(overlay, { opacity: 0, y: 0 });
+      return;
+    }
     gsap.killTweensOf(overlay);
     gsap.to(overlay, {
       opacity: 0,
-      y: 10,
-      duration: 0.25,
+      y: -6,
+      duration: 0.14,
       ease: "power2.in",
+      overwrite: "auto",
     });
   }
 
@@ -928,16 +921,49 @@ document.addEventListener("DOMContentLoaded", () => {
       homeRoot?.classList.remove("home--timeline-active");
       cloudView.style.display = "block";
       timelineView.classList.remove("is-active");
-      gsap.fromTo(cloudView, { opacity: 0 }, { opacity: 1, duration: 0.4 });
-      if (sloganEl) gsap.to(sloganEl, { opacity: 1, duration: 0.3 });
+      if (motionPreference.matches) {
+        gsap.set(cloudView, { opacity: 1 });
+        if (sloganEl) gsap.set(sloganEl, { opacity: 1 });
+      } else {
+        gsap.fromTo(
+          cloudView,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.3, ease: "power2.out" },
+        );
+        if (sloganEl) {
+          gsap.to(sloganEl, {
+            opacity: 1,
+            duration: 0.2,
+            ease: "power2.out",
+          });
+        }
+      }
     } else {
       homeRoot?.classList.add("home--timeline-active");
       if (shouldEnsureTimeline) ensureTimelineRendered();
       cloudView.style.display = "none";
       timelineView.classList.add("is-active");
-      gsap.fromTo(timelineView, { opacity: 0 }, { opacity: 1, duration: 0.4 });
+      if (motionPreference.matches) {
+        gsap.set(timelineView, { opacity: 1 });
+      } else {
+        gsap.fromTo(
+          timelineView,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.3, ease: "power2.out" },
+        );
+      }
       if (shouldEnsureTimeline) scrollTimelineToEnd();
-      if (sloganEl) gsap.to(sloganEl, { opacity: 0, duration: 0.3 });
+      if (sloganEl) {
+        if (motionPreference.matches) {
+          gsap.set(sloganEl, { opacity: 0 });
+        } else {
+          gsap.to(sloganEl, {
+            opacity: 0,
+            duration: 0.14,
+            ease: "power2.in",
+          });
+        }
+      }
     }
   }
 
@@ -977,17 +1003,45 @@ document.addEventListener("DOMContentLoaded", () => {
     const chromeEls = [logo, nav, bio, switchEl, contactEl].filter(Boolean);
     if (activeView === "cloud" && sloganEl) chromeEls.push(sloganEl);
 
+    if (
+      motionPreference.matches ||
+      !isFirstVisit ||
+      !introSlogan ||
+      !introSloganText
+    ) {
+      preloadFirstCloudStripStills();
+      gsap.set(chromeEls, { opacity: 1 });
+      if (cloudItems.length) {
+        gsap.set(cloudItems, { opacity: 1, scale: 1 });
+      }
+      if (introSlogan) gsap.set(introSlogan, { display: "none", opacity: 0 });
+      if (activeView === "timeline") {
+        ensureTimelineRendered();
+        scrollTimelineToEnd();
+      }
+      introFinished = true;
+      homeEl?.setAttribute("aria-busy", "false");
+      try {
+        sessionStorage.setItem(INTRO_KEY, "1");
+      } catch {
+        /* private mode / quota */
+      }
+      return;
+    }
+
     gsap.set(chromeEls, {
       opacity: 0,
     });
     if (activeView !== "cloud" && sloganEl) {
       gsap.set(sloganEl, { opacity: 0 });
     }
-    gsap.set(cloudItems, {
-      opacity: 0,
-      scale: 0.8,
-      transformOrigin: "center center",
-    });
+    if (cloudItems.length) {
+      gsap.set(cloudItems, {
+        opacity: 0,
+        scale: 0.95,
+        transformOrigin: "center center",
+      });
+    }
 
     const shuffled = [...cloudItems].sort(() => Math.random() - 0.5);
     const third = Math.ceil(shuffled.length / 3);
@@ -1019,47 +1073,53 @@ document.addEventListener("DOMContentLoaded", () => {
         chromeEls,
         {
           opacity: 1,
-          duration: 0.6,
+          duration: 0.35,
           ease: "power2.out",
         },
         revealLabel,
       );
-      tl.to(
-        group1,
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.04,
-        },
-        `${revealLabel}+=0.1`,
-      );
-      tl.to(
-        group2,
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.04,
-        },
-        "-=0.45",
-      );
-      tl.to(
-        group3,
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.04,
-        },
-        "-=0.4",
-      );
+      if (group1.length) {
+        tl.to(
+          group1,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.4,
+            ease: "power2.out",
+            stagger: 0.025,
+          },
+          `${revealLabel}+=0.1`,
+        );
+      }
+      if (group2.length) {
+        tl.to(
+          group2,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.4,
+            ease: "power2.out",
+            stagger: 0.025,
+          },
+          "-=0.45",
+        );
+      }
+      if (group3.length) {
+        tl.to(
+          group3,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.4,
+            ease: "power2.out",
+            stagger: 0.025,
+          },
+          "-=0.4",
+        );
+      }
     }
 
-    if (isFirstVisit && introSlogan && introSloganText) {
+    if (introSlogan && introSloganText) {
       gsap.set(introSlogan, { opacity: 1 });
       gsap.set(introSloganText, { opacity: 1 });
 
@@ -1082,9 +1142,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
           gsap.set(split.lines, { transformOrigin: "50% 100%" });
 
-          const line1Duration = 0.65;
-          const line2Duration = 1.05;
-          const pauseAfterLine1 = 0.22;
+          const line1Duration = 0.45;
+          const line2Duration = 0.55;
+          const pauseAfterLine1 = 0.08;
 
           if (lines[0]) {
             tl.from(lines[0], {
@@ -1110,12 +1170,12 @@ document.addEventListener("DOMContentLoaded", () => {
             tl.from(
               lines[i],
               {
-                duration: 0.75,
+                duration: 0.45,
                 yPercent: 100,
                 opacity: 0,
                 ease: "expo.out",
               },
-              ">0.1",
+              ">0.06",
             );
           }
 
@@ -1127,15 +1187,15 @@ document.addEventListener("DOMContentLoaded", () => {
             split.lines,
             {
               opacity: 0,
-              duration: 0.55,
+              duration: 0.22,
               ease: "power2.inOut",
             },
-            ">+0.2",
+            ">+0.12",
           );
 
           tl.to(introSlogan, {
             opacity: 0,
-            duration: 0.35,
+            duration: 0.2,
             ease: "power2.out",
           });
 
@@ -1147,21 +1207,21 @@ document.addEventListener("DOMContentLoaded", () => {
           tl.fromTo(
             introSloganText,
             { opacity: 0, y: 24 },
-            { opacity: 1, y: 0, duration: 0.75, ease: "power2.out" },
+            { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" },
           );
-          tl.to({}, { duration: 0.55 });
+          tl.to({}, { duration: 0.25 });
           tl.call(() => {
             preloadFirstCloudStripStills();
           });
           tl.to(introSloganText, {
             opacity: 0,
-            duration: 0.45,
+            duration: 0.18,
             ease: "power2.in",
           });
           tl.to(
             introSlogan,
-            { opacity: 0, duration: 0.35, ease: "power2.out" },
-            "<0.15",
+            { opacity: 0, duration: 0.2, ease: "power2.out" },
+            "<0.08",
           );
           addIntroRevealTweens(revealLabel);
         }
@@ -1176,53 +1236,6 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(() => {
           requestAnimationFrame(runIntroAfterFonts);
         });
-    } else {
-      homeEl?.setAttribute("aria-busy", "true");
-      // Repeat visits favor instant reveal; do not block on preload.
-      preloadFirstCloudStripStills();
-      tl.to(chromeEls, {
-        opacity: 1,
-        duration: 0.6,
-        ease: "power2.out",
-      });
-      tl.to(
-        group1,
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.04,
-        },
-        "-=0.4",
-      );
-      tl.to(
-        group2,
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.04,
-        },
-        "-=0.45",
-      );
-      tl.to(
-        group3,
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: "power2.out",
-          stagger: 0.04,
-        },
-        "-=0.4",
-      );
-    }
-
-    // Repeat visits: do not wait on unrelated webfonts
-    if (!(isFirstVisit && introSlogan && introSloganText)) {
-      requestAnimationFrame(() => tl.play());
     }
   }
 

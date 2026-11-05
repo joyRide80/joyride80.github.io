@@ -1,7 +1,7 @@
 ---
 title: "RVO (Regionale Verneombud)"
 headline: "RVO (Regionale Verneombud)"
-subtitle: "From Paper to Mobile: Digitalizing Field Inspections"
+subtitle: "Replacing paper inspections with a mobile workflow"
 year: "2024-2025"
 url: "rvofond.no"
 tags:
@@ -13,7 +13,7 @@ tags:
   - "Prototyping"
 
 category: "GovTech, Service Design"
-introduction: "The Regional Safety Representatives (RVO) in Norway serve as vital field inspectors, yet their legacy reporting system was designed strictly for desktop use. This misalignment forced inspectors to collect data on paper while on-site and spend an entire day each week manually transcribing notes into a computer. This double-work resulted in fragmented processes, varied data quality, and a significant administrative burden on a workforce that is not traditionally tech-savvy."
+introduction: "Norway's Regional Safety Representatives carried paper forms on site because their reporting system only worked on desktop. They then spent up to a day each week typing those notes into the system. We designed a mobile workflow for recording inspections where the work happened."
 order: 8
 thumbnail: "/images/projects/rvo/tiny_onsite.png"
 thumbnailImages:
@@ -27,13 +27,9 @@ heroImages:
     size: "large"
 ---
 
-## My Contribution:
+## My role
 
-As the Lead Designer, I headed the digital transformation of the RVO workflow. My goal was to replace the rigid desktop system with a **mobile-first** experience that mirrored the inspectors' actual day-to-day reality in the field.
+I led the workflow redesign from early wireframes through high-fidelity prototypes and several rounds of user testing. I also created a design system for phone and tablet, with accessible type and controls suited to field conditions.
 
-**Iterative Prototyping:** I led the project from initial wireframe concepts to high-fidelity clickable prototypes. We conducted multiple rounds of user testing to ensure the interface was intuitive enough to replace their trusted paper-and-pen method.
-
-**Design System Architecture:** I created and maintained a new, robust design system tailored for mobile and tablet use, ensuring high accessibility and legibility for field conditions.
-
-**Workflow Optimization:** By implementing a system that allows for full reporting during site visits, we eliminated the "admin day," drastically improving data accuracy and giving inspectors more time to focus on safety rather than paperwork.
+The new workflow let inspectors complete a report during the site visit. This removed the weekly transcription step, kept the data closer to the original inspection, and returned that time to field work.
 

@@ -1,7 +1,7 @@
 ---
 title: "Klara Karbon"
 headline: "Klara Karbon"
-subtitle: "An AI-Powered Carbon Accounting Tool for Small Businesses"
+subtitle: "Carbon accounting that shows its work"
 year: "2023-2024"
 url: "klarakarbon.no"
 tags:
@@ -14,7 +14,7 @@ tags:
   - "Design system"
   - "Branding"
 category: "Climatetech, AI"
-introduction: "Klara is a carbon accounting platform designed for small businesses in Norway. Our clients wanted to create a more affordable solution, as existing options were too expensive for their target market. With the help of AI, we were able to build a more cost-effective solution."
+introduction: "Klara helps small Norwegian businesses calculate emissions from their accounting data. It imports invoice lines, matches them to emission factors with OCR and GPT, and shows how each result was calculated so users can review and correct it."
 order: 6
 thumbnail: "/images/projects/klara/tiny_thumbnail.png"
 thumbnailImages:
@@ -31,9 +31,7 @@ heroImages:
 
 ## My Design Role
 
-As the sole designer on a small team, my responsibilities were diverse. I led the product discovery phase, conducting user interviews with experts and potential customers. I created wireframes, prototypes, and design systems to establish a foundation for Klara.
-
-This allowed us to move quickly during the Minimum Viable Product (MVP) phase. After launching the MVP, we made several design changes based on user feedback. I also developed the branding for Klara, including the logo and colour scheme.
+I was the sole designer on a small team. I interviewed sustainability experts and potential customers, then turned the findings into wireframes, prototypes, and the product's design system. After the MVP launched, I revised the workflow using feedback from beta customers. I also designed the Klara name, logo, and colour palette.
 
 <div class="project__content-row-break" aria-hidden="true"></div>
 
@@ -46,17 +44,16 @@ To create a carbon accounting platform, we needed to gain domain knowledge. I co
 
 ## Key Findings and Challenges
 
-Our research revealed two main issues: 
-- **Lack of Transparency** 
-Despite being a key part of the Greenhouse Gas (GHG) protocol, existing solutions lacked transparency. We wanted to create a platform that would empower users to understand their emissions in detail. 
-- **Need for Expertise** 
-Many people believed that calculating carbon emissions required expert knowledge, which was a barrier for small businesses with limited resources. Our goal was to make carbon accounting accessible and easy to understand.
+Our research revealed two main issues:
+
+- **Calculations were hard to inspect.** Users could see an emissions total but not always how the system reached it.
+- **The tools assumed expert knowledge.** Small businesses needed to understand the calculation well enough to check it without hiring a sustainability specialist.
 
 ## Design process
 
 ### Simplifying the Workflow
 
-The application's workflow is straightforward: users import invoices from external accounting software, and our AI-powered system uses OCR and GPT to map invoice lines with emission factors. To reflect this simplicity, we designed the main menu items to be intuitive and easy to navigate.
+Users import invoices from their accounting software. OCR and GPT then map each invoice line to an emission factor. The navigation follows the three parts of that job:
 
 - Transaction page: Users can view and edit imported invoices, along with calculated emissions and categories.
 - Emissions page: This page displays emission values by category, providing users with data to inform their decisions on reducing emissions.
@@ -70,13 +67,13 @@ The application's workflow is straightforward: users import invoices from extern
 
 ### User Testing and Iteration
 
-We conducted user testing with a high-fidelity prototype to ensure users understood the workflow without needing a tutorial. The results showed that we needed to add guidance for first-time users, which we incorporated into the design.
+We tested a high-fidelity prototype without giving participants a tutorial. When first-time users missed important steps, we added guidance at those points in the workflow.
 
 ### Prioritising accuracy and transparency
 
 In addition to transparency, accuracy was a top priority. Unlike other products that use the less precise "spend-based" method, we employed an "activity-based" approach, calculating emission values based on the unit of activity rather than the amount spent.
 
-Our AI-powered system provided the necessary data to perform these calculations. My goal was to create a visually intuitive interface that explained the calculation process, empowering users to understand and edit the information with confidence. Here are two screen images showing the evolution of the Transaction Detail page:
+The interface shows the inputs behind each calculation and lets users edit them. The two screens below show how the Transaction Detail page changed after the MVP:
 
 ![Before and After MVP |span:3|col:2](/images/projects/klara/compare_big.png)
 
@@ -86,4 +83,4 @@ Our AI-powered system provided the necessary data to perform these calculations.
 
 ## Launch and outcome
 
-Klara launched its MVP in April 2024, allowing us to gather feedback from beta customers and make significant changes. We shifted our target user base from experts to regular users, requiring a major overhaul of the user interface to make it more user-friendly. This was a valuable learning experience, and we also had the opportunity to refine the approval process and integrate with additional accounting systems.
+Klara launched its MVP in April 2024. Feedback from beta customers changed our assumption about the audience: the product had to work for regular business users, not only sustainability experts. We redesigned the interface around that audience, refined the approval flow, and added integrations with more accounting systems.

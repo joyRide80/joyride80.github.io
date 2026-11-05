@@ -1,7 +1,7 @@
 ---
 title: "Beagle"
 headline: "Beagle"
-subtitle: "Scaling Agency Growth through Modular Design"
+subtitle: "A faster way for agencies to write proposals"
 year: "2014-2015"
 url: ""
 tags:
@@ -11,7 +11,7 @@ tags:
   - "Visual design"
   - "UI design"
 category: "SaaS, Productivity"
-introduction: "Beagle is a specialized online proposal tool built to help digital agencies create, share, and revise high-quality proposals with speed and precision. The project addressed a major industry pain point: the tedious, repetitive nature of proposal writing. By leveraging the Podio platform, we aimed to transform a fragmented workflow into a unified, browser-based experience that balances professional aesthetics with collaborative efficiency."
+introduction: "Digital agencies rewrite many of the same proposal sections for every pitch. Beagle let teams assemble proposals from reusable content blocks, edit them together, and control the final presentation in one browser-based tool built on Podio."
 order: 2
 thumbnail: "/images/projects/beagle/tiny_beagle-video.mp4"
 thumbnailImages:
@@ -27,7 +27,7 @@ heroImages:
 
 ## Role & Strategy
 
-As a Product Designer, I was part of the core team that built Beagle from the ground up. I conducted extensive user research and interviews with agencies in Copenhagen and London to identify common content patterns. Based on these insights, I designed a **Modular Design Concept** using reusable content blocks, allowing teams to assemble complex documents effortlessly. My role spanned the entire design lifecycle—from initial brainstorming and brand naming to creating high-fidelity prototypes of the four key system screens: **Overview, Detail, Section Library, and Design Studio.**
+I was part of the core team that created Beagle. I interviewed agencies in Copenhagen and London to learn which proposal sections they reused and where collaboration slowed down. I turned those patterns into reusable content blocks and prototyped the four main screens: **Overview, Detail, Section Library, and Design Studio.** I also worked on the product name and brand.
 
 ![|span:1|col:2](/images/projects/beagle/logo-sketch.png)
 
@@ -35,7 +35,7 @@ As a Product Designer, I was part of the core team that built Beagle from the gr
 
 ## Modular design concept
 
-Writing a proposal is a tedious activity. Agencies send out several proposals per day, and many share the same patterns or content. We looked at this pain point to see whether our technology could help. Our solution was to let agencies build proposals from reusable blocks of content. We aimed to make it easy for team members to edit the content and track the flow. They could refine the look and feel of each proposal using our Design Studio feature. The whole flow stayed in one place, in the browser.
+Agencies send several proposals a day, often using the same structure and sections. Beagle turned those recurring parts into reusable content blocks. Team members could assemble a proposal, edit it together, follow its status, and refine the final presentation in Design Studio without leaving the browser.
 
 ## How Beagle works
 

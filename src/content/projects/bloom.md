@@ -1,7 +1,7 @@
 ---
 title: "Bloom"
-headline: "Bloom: Educational iPad App for kids"
-subtitle: "An Immersive, Text-free Exploration of Plant Biology"
+headline: "Bloom"
+subtitle: "A wordless iPad game about how plants grow"
 year: "2016"
 url: "App Store"
 urlHref: "https://apps.apple.com/us/app/bloom-by-megalearn/id1136202811"
@@ -13,7 +13,7 @@ tags:
   - "Concept development"
   - "Research"
 category: "Edtech, Educational Game"
-introduction: "Bloom is an educational game designed to teach the life cycle of plants through intuitive, hands-on interaction. Rather than relying on traditional instructions or text-heavy explanations, Bloom utilizes a discovery-based model. It allows children to grasp complex scientific concepts—such as seed dispersal and growth—entirely through visual storytelling and interactive play."
+introduction: "Bloom teaches the plant life cycle without instructions or written explanations. Children tap, drag, and experiment with seeds, weather, and growth, learning through illustration, physics, and animation."
 order: 3
 thumbnail: "/images/projects/bloom/tiny_bird.png"
 thumbnailImages:
@@ -26,11 +26,11 @@ heroImages:
     overlayVideoWidth: "60%" # You can tweak this string (e.g., "50%", "800px")
 ---
 
-## My Contribution:
+## My role
 
-As a Product Designer and Illustrator, I developed the core game concept, gameplay mechanics, and the entire visual identity. I hand-drew every illustration to create a warm, organic atmosphere that encourages curiosity.
+I designed the game concept and mechanics, then illustrated every scene by hand. The visual style is warm and organic, inviting children to explore without worrying about a wrong move.
 
-By removing all text from the interface, I focused on a **wordless** interaction system where the physics and animations communicate the educational value. Feedback has highlighted how this low-paced, meditative approach allows learners to absorb biological principles naturally, making science accessible to children regardless of their reading level.
+Because the game has no text, each action had to make sense through movement and animation. We kept the pace slow so children had time to notice what changed and try another interaction, regardless of their reading level.
 
 ![|span:2|col:1](/images/projects/bloom/seedfly.jpg)
 
