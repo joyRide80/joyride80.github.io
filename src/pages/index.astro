@@ -20,7 +20,7 @@ const baseUrl = import.meta.env.BASE_URL;
     <!-- Bio text -->
     <div class="home__bio" id="home-bio">
       <p class="home__bio-text">
-        Hi, I'm Joy — a product designer based in Oslo. With a decade of experience across digital products, I focus on making complex technology feel simple and human. Currently leading design at Skalar and co-founding Megalearn, an AI-powered learning game. Previously at Kahoot! <a
+        Hi, I'm Joy — a product designer based in Oslo. With a decade of experience across digital products, I focus on making complex technology feel simple and human. I'm the co-founder and designer of Megalearn, an AI-powered learning game. Previously at Skalar and Kahoot! <a
           href={`${import.meta.env.BASE_URL}about/`}
           style="text-decoration: none; color: var(--gray-600);"
           >More about me</a
@@ -43,11 +43,6 @@ const baseUrl = import.meta.env.BASE_URL;
           let's talk
         </a>
       </div>
-    </div>
-
-    <!-- Intro Slogan Overlay -->
-    <div class="intro-slogan" id="intro-slogan" aria-hidden="true">
-      <p class="intro-slogan__text" id="intro-slogan-text">Designing with Code,<br/>Building with Purpose.</p>
     </div>
 
     <!-- Cloud View -->
@@ -124,15 +119,6 @@ const baseUrl = import.meta.env.BASE_URL;
 </BaseLayout>
 
 <style>
-  /* Hide page chrome until GSAP reveals it — prevents flash on slow connections */
-  :global(#site-logo),
-  :global(#main-nav),
-  :global(#home-bio),
-  :global(.global-contact),
-  :global(#slogan) {
-    opacity: 0;
-  }
-
   :global(.home__switch) {
     display: none;
   }

@@ -922,46 +922,6 @@ ol {
   flex-shrink: 1;
 }
 
-/* ---------- Component: Intro Slogan Overlay ---------- */
-
-.intro-slogan {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(1.5rem, 4vw, 2.25rem);
-  z-index: 200;
-  background-color: var(--bg-100);
-  pointer-events: none;
-  opacity: 0;
-}
-
-.intro-slogan__text {
-  font-family: var(--font-display);
-  font-size: clamp(36px, 4vw + 20px, 56px);
-  line-height: 1.18;
-  color: var(--gray-900);
-  text-align: center;
-  width: 100%;
-  max-width: min(960px, calc(100vw - 2 * var(--page-padding)));
-  padding: 0 var(--page-padding);
-  text-transform: none;
-  text-wrap: balance;
-}
-
-/* SplitText line wrappers for intro animation — increase mask height & spacing */
-.intro-line {
-  display: block;
-  overflow: hidden;
-  padding-bottom: 0.18em; /* extend mask so descenders aren't clipped */
-}
-
-.intro-line + .intro-line {
-  margin-top: 0.3em; /* extra space between first and second line */
-}
-
 .cloud__item {
   display: block;
   position: absolute;

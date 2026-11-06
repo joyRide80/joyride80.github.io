@@ -4,11 +4,8 @@
  */
 
 import gsap from "gsap";
-import { SplitText } from "gsap/SplitText";
 import { compareProjectsChronological } from "../lib/projectYear.ts";
 import { isVideoAssetPath } from "../lib/media.ts";
-
-gsap.registerPlugin(SplitText);
 
 document.addEventListener("DOMContentLoaded", () => {
   const projects = window.__PROJECTS__ || [];
@@ -48,16 +45,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const switchLabels = document.querySelectorAll(".switch__label");
   const cloudEnabled = false;
 
-  /** First N intro strip stills to preload before intro reveals the page. */
   const STRIP_EAGER_TILE_COUNT = 6;
-  const STRIP_PRELOAD_TIMEOUT_MS = 3500;
 
   let activeView = "timeline";
   let isDragging = false;
   let dragStartX = 0;
   let canvasStartX = 0;
   let currentCanvasX = 0;
-  let introFinished = false;
   /** Timeline DOM is built on first switch to timeline (saves bandwidth + main thread). */
   let timelineRendered = false;
   /** Skip full cloud re-render on resize unless layout band changes (avoids canceling media fetches). */
@@ -89,25 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
         v._stripVideoIo = null;
       }
     });
-  }
-
-  /**
-   * Load Pantasia for SplitText metrics only — avoids document.fonts.ready (all faces).
-   * Family is fixed: computed style can still report a fallback before Pantasia applies.
-   */
-  function waitForIntroDisplayFont(introTextEl) {
-    if (!introTextEl || typeof document.fonts?.load !== "function") {
-      return Promise.resolve();
-    }
-    const cs = getComputedStyle(introTextEl);
-    const weight = cs.fontWeight || "400";
-    const size = cs.fontSize || "56px";
-    const spec = `${weight} ${size} Pantasia`;
-    const timeoutMs = 700;
-    return Promise.race([
-      document.fonts.load(spec).catch(() => undefined),
-      new Promise((resolve) => setTimeout(resolve, timeoutMs)),
-    ]);
   }
 
   /**
@@ -437,107 +412,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return items.filter((item) => !item._exclusion);
   }
 
-  /**
-   * Pick intro preload stills from project media pools without depending on cloud layout.
-   * Pass 1 picks one still per project; pass 2 fills remaining slots from leftover stills.
-   */
-  function getIntroPreloadUrls(limit = STRIP_EAGER_TILE_COUNT) {
-    const max = Math.max(0, Number(limit) || 0);
-    if (!max) return [];
-
-    const chosen = [];
-    const seen = new Set();
-    const stillPools = projects.map((project) =>
-      getCloudMediaPool(project).filter((u) => u && !isVideoAssetPath(u)),
-    );
-
-    const addUrl = (rawUrl) => {
-      const normalized = normalizeAssetPath(rawUrl);
-      if (!normalized || seen.has(normalized)) return false;
-      seen.add(normalized);
-      chosen.push(normalized);
-      return true;
-    };
-
-    // First pass: one representative still per project.
-    stillPools.forEach((pool) => {
-      if (chosen.length >= max || !pool.length) return;
-      addUrl(pool[0]);
-    });
-
-    // Second pass: fill remaining slots from the rest of each pool.
-    if (chosen.length < max) {
-      stillPools.forEach((pool) => {
-        if (chosen.length >= max || pool.length < 2) return;
-        for (let i = 1; i < pool.length && chosen.length < max; i += 1) {
-          addUrl(pool[i]);
-        }
-      });
-    }
-
-    return chosen.slice(0, max);
-  }
-
-  /**
-   * Preload a URL list and report ratio progress.
-   * @param {string[]} urls
-   * @param {(ratio: number) => void} [onProgress] 0–1 per decoded still (deduped list).
-   * @param {number} [timeoutMs]
-   */
-  function preloadStillUrls(
-    urls,
-    onProgress,
-    timeoutMs = STRIP_PRELOAD_TIMEOUT_MS,
-  ) {
-    const unique = [...new Set((urls || []).filter(Boolean))];
-    if (!unique.length) {
-      onProgress?.(1);
-      return Promise.resolve();
-    }
-
-    let done = 0;
-    const bump = () => {
-      done += 1;
-      onProgress?.(Math.min(1, done / unique.length));
-    };
-
-    const loadOne = (src) =>
-      new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-          bump();
-          resolve();
-        };
-        img.onerror = () => {
-          bump();
-          resolve();
-        };
-        img.src = src;
-      });
-
-    const loadAll = Promise.all(unique.map(loadOne)).then(() => {
-      onProgress?.(1);
-    });
-
-    const timeout = new Promise((resolve) => {
-      setTimeout(() => {
-        onProgress?.(1);
-        resolve();
-      }, timeoutMs);
-    });
-
-    return Promise.race([loadAll, timeout]);
-  }
-
-  /**
-   * Preload still (non-video) URLs for intro strip imagery.
-   * Videos are excluded; they load via `<video>` after reveal.
-   */
-  function preloadFirstCloudStripStills() {
-    const urls = getIntroPreloadUrls(STRIP_EAGER_TILE_COUNT);
-    return preloadStillUrls(urls, undefined, STRIP_PRELOAD_TIMEOUT_MS);
-  }
-
   // ============================================================
   // Render cloud items
   // ============================================================
@@ -560,11 +434,6 @@ document.addEventListener("DOMContentLoaded", () => {
       el.style.width = `${item.w}px`;
       el.style.height = `${item.h}px`;
       el.style.zIndex = String(i);
-
-      if (introFinished) {
-        el.style.opacity = "1";
-        el.style.transform = "scale(1)";
-      }
 
       const eager = i < STRIP_EAGER_TILE_COUNT;
       appendCoverMedia(el, item.src, item.project.title, {
@@ -910,6 +779,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function switchView(view, opts = {}) {
     const shouldEnsureTimeline = opts.ensureTimeline !== false;
+    const shouldAnimate = opts.animate !== false && !motionPreference.matches;
     activeView = view;
     if (switchTrack) switchTrack.dataset.active = view;
     hideOverlay();
@@ -921,7 +791,7 @@ document.addEventListener("DOMContentLoaded", () => {
       homeRoot?.classList.remove("home--timeline-active");
       cloudView.style.display = "block";
       timelineView.classList.remove("is-active");
-      if (motionPreference.matches) {
+      if (!shouldAnimate) {
         gsap.set(cloudView, { opacity: 1 });
         if (sloganEl) gsap.set(sloganEl, { opacity: 1 });
       } else {
@@ -943,7 +813,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (shouldEnsureTimeline) ensureTimelineRendered();
       cloudView.style.display = "none";
       timelineView.classList.add("is-active");
-      if (motionPreference.matches) {
+      if (!shouldAnimate) {
         gsap.set(timelineView, { opacity: 1 });
       } else {
         gsap.fromTo(
@@ -954,7 +824,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (shouldEnsureTimeline) scrollTimelineToEnd();
       if (sloganEl) {
-        if (motionPreference.matches) {
+        if (!shouldAnimate) {
           gsap.set(sloganEl, { opacity: 0 });
         } else {
           gsap.to(sloganEl, {
@@ -981,265 +851,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ============================================================
-  // Intro animation — page reveal
-  // ============================================================
-
-  const INTRO_KEY = "joy__intro_played";
-  const isFirstVisit = !sessionStorage.getItem(INTRO_KEY);
-
-  function playIntro() {
-    const homeEl = document.getElementById("home");
-    const logo = document.getElementById("site-logo");
-    const nav = document.getElementById("main-nav");
-    const bio = document.getElementById("home-bio");
-    const switchEl = document.querySelector(".home__switch");
-    const contactEl = document.querySelector(".global-contact");
-    const cloudItems = Array.from(document.querySelectorAll(".cloud__item"));
-
-    const sloganEl = document.getElementById("slogan");
-    const introSlogan = document.getElementById("intro-slogan");
-    const introSloganText = document.getElementById("intro-slogan-text");
-
-    const chromeEls = [logo, nav, bio, switchEl, contactEl].filter(Boolean);
-    if (activeView === "cloud" && sloganEl) chromeEls.push(sloganEl);
-
-    if (
-      motionPreference.matches ||
-      !isFirstVisit ||
-      !introSlogan ||
-      !introSloganText
-    ) {
-      preloadFirstCloudStripStills();
-      gsap.set(chromeEls, { opacity: 1 });
-      if (cloudItems.length) {
-        gsap.set(cloudItems, { opacity: 1, scale: 1 });
-      }
-      if (introSlogan) gsap.set(introSlogan, { display: "none", opacity: 0 });
-      if (activeView === "timeline") {
-        ensureTimelineRendered();
-        scrollTimelineToEnd();
-      }
-      introFinished = true;
-      homeEl?.setAttribute("aria-busy", "false");
-      try {
-        sessionStorage.setItem(INTRO_KEY, "1");
-      } catch {
-        /* private mode / quota */
-      }
-      return;
-    }
-
-    gsap.set(chromeEls, {
-      opacity: 0,
-    });
-    if (activeView !== "cloud" && sloganEl) {
-      gsap.set(sloganEl, { opacity: 0 });
-    }
-    if (cloudItems.length) {
-      gsap.set(cloudItems, {
-        opacity: 0,
-        scale: 0.95,
-        transformOrigin: "center center",
-      });
-    }
-
-    const shuffled = [...cloudItems].sort(() => Math.random() - 0.5);
-    const third = Math.ceil(shuffled.length / 3);
-    const group1 = shuffled.slice(0, third);
-    const group2 = shuffled.slice(third, third * 2);
-    const group3 = shuffled.slice(third * 2);
-
-    const tl = gsap.timeline({
-      paused: true,
-      onComplete: () => {
-        if (activeView === "timeline") {
-          ensureTimelineRendered();
-          scrollTimelineToEnd();
-        }
-        introFinished = true;
-        homeEl?.setAttribute("aria-busy", "false");
-        try {
-          sessionStorage.setItem(INTRO_KEY, "1");
-        } catch {
-          /* private mode / quota */
-        }
-      },
-    });
-
-    /** Shared tail: reveal chrome + cloud after intro overlay. */
-    function addIntroRevealTweens(revealLabel) {
-      tl.addLabel(revealLabel);
-      tl.to(
-        chromeEls,
-        {
-          opacity: 1,
-          duration: 0.35,
-          ease: "power2.out",
-        },
-        revealLabel,
-      );
-      if (group1.length) {
-        tl.to(
-          group1,
-          {
-            opacity: 1,
-            scale: 1,
-            duration: 0.4,
-            ease: "power2.out",
-            stagger: 0.025,
-          },
-          `${revealLabel}+=0.1`,
-        );
-      }
-      if (group2.length) {
-        tl.to(
-          group2,
-          {
-            opacity: 1,
-            scale: 1,
-            duration: 0.4,
-            ease: "power2.out",
-            stagger: 0.025,
-          },
-          "-=0.45",
-        );
-      }
-      if (group3.length) {
-        tl.to(
-          group3,
-          {
-            opacity: 1,
-            scale: 1,
-            duration: 0.4,
-            ease: "power2.out",
-            stagger: 0.025,
-          },
-          "-=0.4",
-        );
-      }
-    }
-
-    if (introSlogan && introSloganText) {
-      gsap.set(introSlogan, { opacity: 1 });
-      gsap.set(introSloganText, { opacity: 1 });
-
-      const runIntroAfterFonts = () => {
-        homeEl?.setAttribute("aria-busy", "true");
-        const revealLabel = "revealSite";
-        try {
-          const split = SplitText.create(introSloganText, {
-            type: "words,lines",
-            linesClass: "intro-line",
-            mask: "lines",
-            autoSplit: true,
-          });
-
-          const lines = split.lines;
-          if (!lines?.length) {
-            split.revert();
-            throw new Error("SplitText produced no lines");
-          }
-
-          gsap.set(split.lines, { transformOrigin: "50% 100%" });
-
-          const line1Duration = 0.45;
-          const line2Duration = 0.55;
-          const pauseAfterLine1 = 0.08;
-
-          if (lines[0]) {
-            tl.from(lines[0], {
-              duration: line1Duration,
-              yPercent: 100,
-              opacity: 0,
-              ease: "expo.out",
-            });
-          }
-          if (lines[1]) {
-            tl.from(
-              lines[1],
-              {
-                duration: line2Duration,
-                yPercent: 100,
-                opacity: 0,
-                ease: "expo.out",
-              },
-              `>${pauseAfterLine1}`,
-            );
-          }
-          for (let i = 2; i < lines.length; i++) {
-            tl.from(
-              lines[i],
-              {
-                duration: 0.45,
-                yPercent: 100,
-                opacity: 0,
-                ease: "expo.out",
-              },
-              ">0.06",
-            );
-          }
-
-          tl.call(() => {
-            preloadFirstCloudStripStills();
-          });
-
-          tl.to(
-            split.lines,
-            {
-              opacity: 0,
-              duration: 0.22,
-              ease: "power2.inOut",
-            },
-            ">+0.12",
-          );
-
-          tl.to(introSlogan, {
-            opacity: 0,
-            duration: 0.2,
-            ease: "power2.out",
-          });
-
-          tl.call(() => split.revert());
-
-          addIntroRevealTweens(revealLabel);
-        } catch {
-          homeEl?.setAttribute("aria-busy", "true");
-          tl.fromTo(
-            introSloganText,
-            { opacity: 0, y: 24 },
-            { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" },
-          );
-          tl.to({}, { duration: 0.25 });
-          tl.call(() => {
-            preloadFirstCloudStripStills();
-          });
-          tl.to(introSloganText, {
-            opacity: 0,
-            duration: 0.18,
-            ease: "power2.in",
-          });
-          tl.to(
-            introSlogan,
-            { opacity: 0, duration: 0.2, ease: "power2.out" },
-            "<0.08",
-          );
-          addIntroRevealTweens(revealLabel);
-        }
-
-        tl.play();
-      };
-
-      waitForIntroDisplayFont(introSloganText)
-        .then(() => {
-          requestAnimationFrame(runIntroAfterFonts);
-        })
-        .catch(() => {
-          requestAnimationFrame(runIntroAfterFonts);
-        });
-    }
-  }
-
-  // ============================================================
   // Init
   // ============================================================
   if (cloudEnabled) {
@@ -1251,8 +862,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const sloganEl = document.getElementById("slogan");
     if (sloganEl) gsap.set(sloganEl, { opacity: 0 });
   }
-  switchView("timeline", { ensureTimeline: false });
-  playIntro();
+  switchView("timeline", { animate: false });
 
   // Recalculate on resize only when layout bands change (full re-render cancels in-flight video)
   let resizeTimer;
