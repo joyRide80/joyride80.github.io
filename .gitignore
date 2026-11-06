@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# local AI editor and agent skills
+.claude/
+.codex/
+.cursor/
+.gemini/
