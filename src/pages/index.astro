@@ -43,6 +43,9 @@ const baseUrl = import.meta.env.BASE_URL;
           let's talk
         </a>
       </div>
+      <a hidden class="home__v2-preview" href={`${import.meta.env.BASE_URL}proto/home-index/?v=2`}>
+        View the V2 home concepts <span aria-hidden="true">↗</span>
+      </a>
     </div>
 
     <!-- Cloud View -->
@@ -121,5 +124,16 @@ const baseUrl = import.meta.env.BASE_URL;
 <style>
   :global(.home__switch) {
     display: none;
+  }
+
+  .home__v2-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    margin-top: 8px;
+    font: 13px var(--font-mono);
+    text-decoration-thickness: from-font;
+    text-underline-offset: 3px;
   }
 </style>
